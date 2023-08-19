@@ -2290,7 +2290,201 @@ haswell_laptop_config_setup() {
     aapl_plat_id
     echo "$plat_id" | xxd -r -p - > $dir/temp/aapl_id.bin
     import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):AAPL,ig-platform-id" $dir/temp/aapl_id.bin
-    hd
+    hd4xxx() {
+        echo "################################################################"
+        echo "Do you have a HD4200, HD4400 or HD4600?"
+        echo "################################################################"
+        read -r -p "y/n: " hd4xxx_choice
+        case $hd4xxx_choice in
+            Y|y|YES|Yes|yes )
+                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data
+                echo "12040000" | xxd -r -p - > $dir/temp/deviceid.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" $dir/temp/deviceid.bin
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hd4xxx
+            ;;
+        esac
+    }
+    hd4xxx
+    add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data
+    echo "01000000" | xxd -r -p - > $dir/temp/framebuffer-patch-enable.bin
+    import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" $dir/temp/framebuffer-patch-enable.bin
+    add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-cursormem" data
+    echo "00009000" | xxd -r -p - > $dir/temp/framebuffer-cursormem.bin
+    import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-cursormem" $dir/temp/framebuffer-cursormem.bin
+    set_plist :Kernel:Quirks:AppleCpuPmCfgLock True
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hplaptop() {
+        echo "################################################################"
+        echo "Is your laptop a HP laptop?"
+        echo "################################################################"
+        read -r -p "y/n: " hplaptop_choice
+        case $hplaptop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|No|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hplaptop
+        esac
+    }
+    hplaptop
+    set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 )
+            set_plist :Kernel:Quirks:XhciPortLimit True
+        ;;
+    esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    platforminfo() {
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware"
+        echo "1. MacBookAir6,1 - CPU: Dual Core 15W	- GPU: HD 5000 - Display: 11inch"
+        echo "2. MacBookAir6,2 - CPU: Dual Core 15W	- GPU: HD 5000 - Display: 13inch"
+        echo "3. MacBookPro11,1 - CPU: Dual Core 28W - GPU: Iris 5100 - Display: 13inch"
+        echo "4. MacBookPro11,2 - CPU: Quad Core 45W - GPU: Iris Pro 5200 - Display: 15inch"
+        echo "5. MacBookPro11,3 - CPU: Quad Core 45W - GPU: Iris Pro 5200 + dGPU: GT 750M - Display: 15inch"
+        echo "6. MacBookPro11,4 - CPU: Quad Core 45W - GPU: Iris Pro 5200 - Display: 15inch"
+        echo "7. MacBookPro11,5 - CPU: Quad Core 45W - GPU: Iris Pro 5200 + dGPU: R9 M370X - Display: 15inch"
+        echo "8. Macmini7,1 - CPU: NUC Systems - GPU: HD 5000/Iris 5100	- Display: N/A"
+        echo "################################################################"
+        read -r -p "Pick a number 1-8: " smbios_choice
+        case $smbios_choice in
+            1 )
+                case $os_choice in
+                    1|2 )
+                        error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname="MacBookAir6,1"
+                    ;;
+                esac
+            ;;
+            2 )
+                case $os_choice in
+                    1|2 )
+                        error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname="MacBookAir6,2"
+                    ;;
+                esac
+            ;;
+            3 )
+                case $os_choice in
+                    1|2 )
+                        error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname="MacBookPro11,1"
+                    ;;
+                esac
+            ;;
+            4 )
+                case $os_choice in
+                    1|2 )
+                        error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname="MacBookPro11,2"
+                    ;;
+                esac
+            ;;
+            5 )
+                case $os_choice in
+                    1|2 )
+                        error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname="MacBookPro11,3"
+                    ;;
+                esac
+            ;;
+            6 )
+                smbiosname="MacBookPro11,4"
+            ;;
+            7 )
+                smbiosname="MacBookPro11,5"
+            ;;
+            8 )
+                smbiosname="Macmini7,1"
+            ;;
+            * )
+                error "Invalid Choice"
+                platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:ReleaseUsbOwnership True
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hplaptop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "You must disable CFG-Lock in BIOS."
 }
 
 
