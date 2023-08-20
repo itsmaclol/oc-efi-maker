@@ -99,10 +99,10 @@ import_plist() {
 delete_plist() {
     case $os in
         Darwin )
-            /usr/libexec/PlistBuddy -c "Delete $1 $2" "$PLIST_FILE" 
+            /usr/libexec/PlistBuddy -c "Delete $1" "$PLIST_FILE" 
         ;;
         Linux )
-            $dir/temp/PlistBuddy-Linux -c "Delete $1 $2" "$PLIST_FILE"
+            $dir/temp/PlistBuddy-Linux -c "Delete $1" "$PLIST_FILE"
         ;;
     esac  
 }
