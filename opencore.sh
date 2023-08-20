@@ -706,6 +706,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
+    echo "5. Bulldozer(15h) and Jaguar(16h)"
+    echo "6. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -724,6 +726,8 @@ acpi_func
 
 case $pc_choice in
     1 )
+       case $acpidesktop_choice in
+           4 )
         echo "################################################################"
         echo "We'll need to ask you this question for gathering ACPI files."
         echo "Do you have an Asus's 400 series motherboard?"
@@ -743,6 +747,16 @@ case $pc_choice in
                 echo "2. 10th gen"
                 echo "################################################################"
                 read -r -p "Pick a number 1 or 2: " laptopgen_choice
+            ;;
+        esac
+
+case $pc_choice in
+     3 )
+               echo "################################################################"
+               echo "We'll need to ask you this question for gathering ACPI files."
+               echo "Do you have a B550 or A520 series motherboard?"
+               echo "################################################################"
+               read -r -p "y/n: " amd_500_choice
             ;;
         esac
     ;;
@@ -785,6 +799,18 @@ case $pc_choice in
                         info "Downloading SSDT-RHUB..."
                         curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o $efi/ACPI/SSDT-RHUB.aml
                     ;;
+            5 )
+               info "Downloading SSDT-EC-USBX-DESKTOP..."
+               curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            ;;
+            6 )
+               info "Downloading SSDT-EC-USBX-DESKTOP..."
+               curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+               case $am5desktop_choice in
+                    y|Y|Yes|YES|yes )
+                        info "Downloading SSDT-CPUR..."
+                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+                       ;;
                 esac
         esac
     ;;
@@ -2469,7 +2495,138 @@ haswell_laptop_config_setup() {
     warning "You must disable CFG-Lock in BIOS."
 }
 
-
+haswell_desktop_config_setup() {
+    # device properties confused me so i gave up :3
+    set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+    smbios_guid(){
+        echo "################################################################"
+        echo "Do you have a Dell or VAIO system?"
+        echo "################################################################"
+        read -r -p "y/n: " smbios_guid_choice
+        case $smbios_guid_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:CustomSMBIOSGuid True
+            ;;
+            N|n|NO|No|no
+                set_plist :Kernel:Quirks:CustomSMBIOSGuid False
+            ;;
+            * )
+               error "Invalid Choice"
+               smbios_guid
+            esac
+}
+smbios_guid
+hpdesktop() {
+    echo "################################################################"
+    echo "Do you have a HP System?"
+    echo "################################################################"
+    read -r -p "y/n: " hpdesktop_choice
+    case $hpdesktop_choice in
+        Y|y|YES|Yes|yes )
+            set_plist :Kernel:Quirks:LapicKernelPanic True
+         ;;
+        n|N|NO|No|no )
+            set_plist :Kernel:Quirks:LapicKernelPanic False
+         ;;
+         * )
+            error "Invalid Choice"
+            hpdesktop
+        esac
+}
+set_plist :Kernel:Quirks:DisableIoMapper True
+set_plist :Kernel:Quirks:PanicNoKextDump True
+set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+case $os_choice in
+    4|5 ) 
+         set_plist :Kernel:Quirks:XhciPortLimit False
+    ;;
+esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    #gumi note: add gpu-specific boot args later
+    platforminfo(){
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware"
+        echo "1. iMac14,4 (Haswell with only iGPU)"
+        echo "2. iMac15,1 (Haswell with dGPU)"
+        echo "3. iMac16,2 (Broadwell with only iGPU)"
+        echo "4. iMac17,1 (Broadwell with dGPU)"
+        echo "################################################################"
+        read -r -p "Pick a number 1-4: " smbios_choice
+        case $smbios_choice in
+             1 )
+               case $os_choice in
+                    1|2 )
+                         error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                         platforminfo
+                    ;;
+                    * )
+                       smbiosname="iMac14,4"
+                    ;;
+                esac
+            ;;
+            2 )
+            case $os_choice in
+                    1|2 )
+                         error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                         platforminfo
+                    ;;
+                    * )
+                       smbiosname="iMac15,1"
+                    ;;
+                esac
+            ;;
+            3 )
+               smbiosname="iMac16,2"
+            ;;
+            4 )
+               smbiosname="iMac17,1"
+            ;;
+            * )
+               error "Invalid Choice"
+               platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For intial install)\nIntel SGX\nIntel Platform Trust\CFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI"
+}
 
 cpu_rev_laptop() {
     echo "################################################################"
@@ -2518,8 +2675,10 @@ cpu_rev_desktop() {
     echo "4. Kaby Lake"
     echo "5. Coffee Lake"
     echo "6. Comet Lake"
+    echo "7. Bulldozer(15h) and Jaguar (16h)"
+    echo "8. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
-    read -r -p "Pick a number 1-6: " desktop_cpu_gen_choice
+    read -r -p "Pick a number 1-8: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
         1 )
             haswell_desktop_config_setup
@@ -2538,6 +2697,12 @@ cpu_rev_desktop() {
         ;;
         6 )
             cometlake_desktop_config_setup
+        ;;
+        7 ) 
+           amd1516_desktop_config_setup
+        ;;
+        8 ) 
+           amd1719_desktop_config_setup
         ;;
     esac
 }
