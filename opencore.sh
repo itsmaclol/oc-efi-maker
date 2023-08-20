@@ -5,7 +5,7 @@ os=$(uname)
 case $os in
     Darwin )
         if [ "$(uname -m | head -c2)" = "iP" ]; then
-            error "This script is not meant to be used on an iDevice. Please use a PC to use this script."
+            error "This script is not meant to be used on an iDevice. Please use a Mac/Hackintosh to use this script."
             exit 1
         fi
     ;;
@@ -822,10 +822,10 @@ case $pc_choice in
 esac
 
 
-DRIVERS_FOLDER="$efi/Drivers"
-KEXT_FOLDER="$efi/Kexts"
-ACPI_FOLDER="$efi/ACPI"
-TOOLS_FOLDER="$efi/Tools"
+# DRIVERS_FOLDER="$efi/Drivers"
+# KEXT_FOLDER="$efi/Kexts"
+# ACPI_FOLDER="$efi/ACPI"
+# TOOLS_FOLDER="$efi/Tools"
 PLIST_FILE="$efi/config.plist"
 
 delete_plist :Kernel:Add
@@ -1925,7 +1925,7 @@ skylake_laptop_config_setup() {
             Y|y|YES|Yes|yes )
                 set_plist :Kernel:Quirks:LapicKernelPanic True
             ;;
-            n|N|No|No|no )
+            n|N|NO|No|no )
                 echo "" > /dev/null
             ;;
             * )
@@ -2148,7 +2148,7 @@ broadwell_laptop_config_setup() {
             Y|y|YES|Yes|yes )
                 set_plist :Kernel:Quirks:LapicKernelPanic True
             ;;
-            n|N|No|No|no )
+            n|N|NO|No|no )
                 echo "" > /dev/null
             ;;
             * )
@@ -2345,7 +2345,7 @@ haswell_laptop_config_setup() {
             Y|y|YES|Yes|yes )
                 set_plist :Kernel:Quirks:LapicKernelPanic True
             ;;
-            n|N|No|No|no )
+            n|N|No|NO|no )
                 echo "" > /dev/null
             ;;
             * )
