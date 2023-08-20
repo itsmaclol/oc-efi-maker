@@ -6,6 +6,19 @@ tmpdir=$(mktemp -d)
 dir=$tmpdir
 mkdir "$dir"/temp
 
+error() {
+    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${RED}<Error>${NO_COLOR}: ${RED}$1${NO_COLOR}"
+}
+
+info() {
+    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${LIGHT_CYAN}<Info>${NO_COLOR}: ${LIGHT_CYAN}$1${NO_COLOR}"
+}
+
+warning() {
+    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${YELLOW}<Warning>${NO_COLOR}: ${YELLOW}$1${NO_COLOR}"
+}
+
+
 
 case $os in
     Darwin )
@@ -48,17 +61,6 @@ BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases
 NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
 VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
 # Logging functions
-error() {
-    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${RED}<Error>${NO_COLOR}: ${RED}$1${NO_COLOR}"
-}
-
-info() {
-    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${LIGHT_CYAN}<Info>${NO_COLOR}: ${LIGHT_CYAN}$1${NO_COLOR}"
-}
-
-warning() {
-    echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${YELLOW}<Warning>${NO_COLOR}: ${YELLOW}$1${NO_COLOR}"
-}
 
 add_plist() {
     case $os in
