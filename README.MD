@@ -1,3 +1,8 @@
 # oc-efi-maker
 
+# NOTE
+THE SCRIPT IS IN HEAVY DEVELOPMENT AND IT MAY NOT WORK
+DO NOT USE.
+
+
 Made with <3 by Mac
