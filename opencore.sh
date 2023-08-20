@@ -706,8 +706,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    echo "5. Bulldozer(15h) and Jaguar(16h)"
-    echo "6. Ryzen and Threadripper(17h and 19h)"
+    # echo "5. Bulldozer(15h) and Jaguar(16h)"
+    # echo "6. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -728,11 +728,13 @@ case $pc_choice in
     1 )
        case $acpidesktop_choice in
            4 )
-        echo "################################################################"
-        echo "We'll need to ask you this question for gathering ACPI files."
-        echo "Do you have an Asus's 400 series motherboard?"
-        echo "################################################################"
-        read -r -p "y/n: " asus_mb_choice
+                echo "################################################################"
+                echo "We'll need to ask you this question for gathering ACPI files."
+                echo "Do you have an Asus's 400 series motherboard?"
+                echo "################################################################"
+                read -r -p "y/n: " asus_mb_choice
+            ;;
+        esac
     ;;
 esac
 
@@ -749,18 +751,19 @@ case $pc_choice in
                 read -r -p "Pick a number 1 or 2: " laptopgen_choice
             ;;
         esac
-
-case $pc_choice in
-     3 )
-               echo "################################################################"
-               echo "We'll need to ask you this question for gathering ACPI files."
-               echo "Do you have a B550 or A520 series motherboard?"
-               echo "################################################################"
-               read -r -p "y/n: " amd_500_choice
-            ;;
-        esac
-    ;;
 esac
+
+# case $pc_choice in
+#      3 )
+#                echo "################################################################"
+#                echo "We'll need to ask you this question for gathering ACPI files."
+#                echo "Do you have a B550 or A520 series motherboard?"
+#                echo "################################################################"
+#                read -r -p "y/n: " amd_500_choice
+#             ;;
+#         esac
+#     ;;
+# esac
 
 case $pc_choice in 
     1 )
@@ -799,19 +802,25 @@ case $pc_choice in
                         info "Downloading SSDT-RHUB..."
                         curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o $efi/ACPI/SSDT-RHUB.aml
                     ;;
-            5 )
-               info "Downloading SSDT-EC-USBX-DESKTOP..."
-               curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            ;;
-            6 )
-               info "Downloading SSDT-EC-USBX-DESKTOP..."
-               curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
-               case $am5desktop_choice in
-                    y|Y|Yes|YES|yes )
-                        info "Downloading SSDT-CPUR..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
-                       ;;
                 esac
+            ;;
+            # 5 )
+            #    info "Downloading SSDT-EC-USBX-DESKTOP..."
+            #    curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            # ;;
+            # 6 )
+            #    info "Downloading SSDT-EC-USBX-DESKTOP..."
+            #    curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            #    case $am5desktop_choice in
+            #         y|Y|Yes|YES|yes )
+            #             info "Downloading SSDT-CPUR..."
+            #             curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+            #            ;;
+            #     esac
+            * )
+                error "Invalid Choice"
+                acpi_desktop
+            ;;
         esac
     ;;
     2 )
@@ -879,6 +888,10 @@ case $pc_choice in
                 curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
                 curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+            ;;
+            * )
+                error "Invalid Choice"
+                acpi_laptop
             ;;
         esac
     ;;
@@ -2129,6 +2142,7 @@ broadwell_laptop_config_setup() {
     }
     dmvt
     set_plist :Kernel:Quirks:AppleCpuPmCfgLock True
+    set_plist :Kernel:Quirks:AppleXcpmCfgLock True
     vtd() {
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
@@ -2264,7 +2278,7 @@ broadwell_laptop_config_setup() {
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "You must disable CFG-Lock in BIOS."
+    warning "You must enable CFG-Lock in BIOS."
 }
 
 haswell_laptop_config_setup() {
@@ -2326,6 +2340,7 @@ haswell_laptop_config_setup() {
     echo "00009000" | xxd -r -p - > $dir/temp/framebuffer-cursormem.bin
     import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-cursormem" $dir/temp/framebuffer-cursormem.bin
     set_plist :Kernel:Quirks:AppleCpuPmCfgLock True
+    set_plist :Kernel:Quirks:AppleXcpmCfgLock True
     vtd() {
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
@@ -2492,55 +2507,146 @@ haswell_laptop_config_setup() {
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "You must disable CFG-Lock in BIOS."
+    warning "You must enable CFG-Lock in BIOS."
 }
 
 haswell_desktop_config_setup() {
-    # device properties confused me so i gave up :3
-    set_plist :Kernel:Quirks:AppleXcpmCfgLock True
-    smbios_guid(){
+    aapl_plat_id() {
         echo "################################################################"
-        echo "Do you have a Dell or VAIO system?"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Pick the one closest to your hardware."
+        echo "1. 0300220D - Used when the Desktop Haswell iGPU is used to drive a display"
+        echo "2. 04001204 - Used when the Desktop Haswell iGPU is only used for computing tasks and doesn't drive a display"
+        echo "3. 07002216 - Used when the Desktop Broadwell iGPU is used to drive a display"
         echo "################################################################"
-        read -r -p "y/n: " smbios_guid_choice
-        case $smbios_guid_choice in
-            Y|y|YES|Yes|yes )
-                set_plist :Kernel:Quirks:CustomSMBIOSGuid True
+        read -r -p "Pick a number 1-3: " aapl_plat_id
+        case $aapl_plat_id in
+            1 )
+                plat_id="0300220D"
             ;;
-            N|n|NO|No|no )
-                set_plist :Kernel:Quirks:CustomSMBIOSGuid False
+            2 )
+                plat_id="04001204"
+            ;;
+            3 )
+                plat_id="07002216"
             ;;
             * )
-               error "Invalid Choice"
-               smbios_guid
-            esac
-}
-smbios_guid
-hpdesktop() {
-    echo "################################################################"
-    echo "Do you have a HP System?"
-    echo "################################################################"
-    read -r -p "y/n: " hpdesktop_choice
-    case $hpdesktop_choice in
-        Y|y|YES|Yes|yes )
-            set_plist :Kernel:Quirks:LapicKernelPanic True
-         ;;
-        n|N|NO|No|no )
-            set_plist :Kernel:Quirks:LapicKernelPanic False
-         ;;
-         * )
-            error "Invalid Choice"
-            hpdesktop
+                error "Invalid Choice"
+                aapl_plat_id
+            ;;
         esac
-}
-set_plist :Kernel:Quirks:DisableIoMapper True
-set_plist :Kernel:Quirks:PanicNoKextDump True
-set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
-case $os_choice in
-    4|5 ) 
-         set_plist :Kernel:Quirks:XhciPortLimit False
-    ;;
-esac
+    }
+    aapl_plat_id
+    echo "$plat_id" | xxd -r -p - > $dir/temp/aapl_id.bin
+    import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):AAPL,ig-platform-id" $dir/temp/aapl_id.bin
+    hd4400() {
+        echo "################################################################"
+        echo "Do you have a HD4400?"
+        echo "################################################################"
+        read -r -p "y/n: " hd4400_choice
+        case $hd4400_choice in
+            y|Y|YES|Yes|yes )   
+                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data
+                echo "12040000" | xxd -r -p - > $dir/temp/deviceid.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" $dir/temp/deviceid.bin
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+        esac
+    }
+    dmvt() {
+        echo "################################################################"
+        echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
+        echo "################################################################"
+        read -r -p "y/n: " dmvt_choice
+        case $dmvt_choice in
+            y|Y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                echo "01000000" | xxd -r -p - > $dir/temp/framebuffer_patch_enable.bin
+                echo "00003001" | xxd -r -p - > $dir/temp/framebuffer_stolenmem.bin 
+                echo "00009000" | xxd -r -p - > $dir/temp/framebuffer_fbmem
+                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data
+                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" data
+                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" data
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" $dir/temp/framebuffer-patch-enable.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" $dir/temp/framebuffer-stolenmem.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" $dir/temp/framebuffer-fbmem.bin
+            ;;
+            * )
+                error "Invalid Choice"
+                dmvt
+            ;;
+        esac
+    }
+    dmvt
+    set_plist :Kernel:Quirks:AppleCpuPmCfgLock True
+    set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+    #mac note: ???????????????????????
+    # smbios_guid(){
+    #     echo "################################################################"
+    #     echo "Do you have a Dell or VAIO system?"
+    #     echo "################################################################"
+    #     read -r -p "y/n: " smbios_guid_choice
+    #     case $smbios_guid_choice in
+    #         Y|y|YES|Yes|yes )
+    #             set_plist :Kernel:Quirks:CustomSMBIOSGuid True
+    #         ;;
+    #         N|n|NO|No|no )
+    #             echo "" > /dev/null
+    #         ;;
+    #         * )
+    #            error "Invalid Choice"
+    #            smbios_guid
+    #     esac
+    # }
+    # smbios_guid
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    set_plist :Kernel:Quirks:DisableIoMapper True
+    set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 ) 
+             set_plist :Kernel:Quirks:XhciPortLimit False
+        ;;
+    esac
     set_plist :Misc:Debug:AppleDebug True
     set_plist :Misc:Debug:ApplePanic True
     set_plist :Misc:Debug:DisableWatchDog True
@@ -2556,10 +2662,10 @@ esac
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
         echo "Pick the closest one to your hardware"
-        echo "1. iMac14,4 (Haswell with only iGPU)"
-        echo "2. iMac15,1 (Haswell with dGPU)"
-        echo "3. iMac16,2 (Broadwell with only iGPU)"
-        echo "4. iMac17,1 (Broadwell with dGPU)"
+        echo "1. iMac14,4 - Haswell with only iGPU"
+        echo "2. iMac15,1 - Haswell with dGPU"
+        echo "3. iMac16,2 - Broadwell with only iGPU"
+        echo "4. iMac17,1 - Broadwell with dGPU"
         echo "################################################################"
         read -r -p "Pick a number 1-4: " smbios_choice
         case $smbios_choice in
@@ -2575,14 +2681,14 @@ esac
                 esac
             ;;
             2 )
-            case $os_choice in
-                    1|2 )
-                         error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
-                         platforminfo
-                    ;;
-                    * )
-                       smbiosname="iMac15,1"
-                    ;;
+                case $os_choice in
+                        1|2 )
+                            error "This SMBIOS is not supported in macOS Monterey or higher! Please pick another."
+                            platforminfo
+                        ;;
+                        * )
+                            smbiosname="iMac15,1"
+                        ;;
                 esac
             ;;
             3 )
@@ -2624,8 +2730,8 @@ esac
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For intial install)\nIntel SGX\nIntel Platform Trust\CFG Lock"
-    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For intial install)\nIntel SGX\nIntel Platform Trust"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
 }
 
 cpu_rev_laptop() {
@@ -2663,6 +2769,9 @@ cpu_rev_laptop() {
         7 )
             ice_lake_laptop_config_setup
         ;;
+        * )
+            error "Invalid Choice"
+            cpu_rev_laptop
     esac
 }
 
@@ -2675,8 +2784,8 @@ cpu_rev_desktop() {
     echo "4. Kaby Lake"
     echo "5. Coffee Lake"
     echo "6. Comet Lake"
-    echo "7. Bulldozer(15h) and Jaguar (16h)"
-    echo "8. Ryzen and Threadripper(17h and 19h)"
+    # echo "7. Bulldozer(15h) and Jaguar (16h)"
+    # echo "8. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-8: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
@@ -2698,12 +2807,15 @@ cpu_rev_desktop() {
         6 )
             cometlake_desktop_config_setup
         ;;
-        7 ) 
-           amd1516_desktop_config_setup
-        ;;
-        8 ) 
-           amd1719_desktop_config_setup
-        ;;
+        # 7 ) 
+        #    amd1516_desktop_config_setup
+        # ;;
+        # 8 ) 
+        #    amd1719_desktop_config_setup
+        # ;;
+        * )
+            error "Invalid Choice"
+            cpu_rev_desktop
     esac
 }
 
