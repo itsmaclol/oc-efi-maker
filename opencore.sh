@@ -6,6 +6,12 @@ tmpdir=$(mktemp -d)
 dir=$tmpdir
 mkdir "$dir"/temp
 
+# Thanks to palera1n install.sh and to checkra1n for this coloring scheme!
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+DARK_GRAY='\033[90m'
+LIGHT_CYAN='\033[0;96m'
+NO_COLOR='\033[0m'
 error() {
     echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${RED}<Error>${NO_COLOR}: ${RED}$1${NO_COLOR}"
 }
@@ -37,12 +43,6 @@ case $os in
         exit 1
 esac
 
-# Thanks to palera1n install.sh and to checkra1n for this coloring scheme!
-RED='\033[0;31m'
-YELLOW='\033[0;33m'
-DARK_GRAY='\033[90m'
-LIGHT_CYAN='\033[0;96m'
-NO_COLOR='\033[0m'
 
 OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
 LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
@@ -858,70 +858,15 @@ case $pc_choice in
     ;;
 esac
 
-
-# DRIVERS_FOLDER="$efi/Drivers"
-# KEXT_FOLDER="$efi/Kexts"
-# ACPI_FOLDER="$efi/ACPI"
-# TOOLS_FOLDER="$efi/Tools"
 PLIST_FILE="$efi/config.plist"
 
-delete_plist :Kernel:Add
-add_plist :Kernel:Add dict
-delete_plist :ACPI:Add
-add_plist :ACPI:Add dict
-delete_plist :UEFI:Drivers
-add_plist :UEFI:Drivers dict
-delete_plist :Misc:Tools
-add_plist :Misc:Tools dict
+git clone -q https://github.com/corpnewt/OCSnapshot.git $dir/OCSnapshot
+info "Adding Driver entries into config.plist..."
+info "Adding ACPI entries into config.plist..."
+info "Adding Tool entries into config.plist..."
+info "Adding Kext entries into config.plist..."
+python3 $dir/OCSnapshot/OCSnapshot.py -i $efi/config.plist -s $dir/EFI/EFI/OC -c &> /dev/null
 
-# acpi_python_script=$(cat <<'END_HEREDOC'
-# import os
-# import plistlib
-
-# # Path to the folder containing ACPI files (.aml)
-# acpi_folder = os.environ["ACPI_FOLDER"]
-
-# # Path to the existing plist file to be updated
-# existing_plist = os.environ["PLIST_FILE"]
-
-# # Load the existing plist
-# with open(existing_plist, 'rb') as plist_file:
-#     plist_data = plist_file.read()
-
-# existing_data = plistlib.loads(plist_data)
-
-# # Get a list of ACPI files in the folder
-# acpi_files = [file for file in os.listdir(acpi_folder) if file.endswith('.aml')]
-
-# # Create the ACPI entries in the format you described
-# acpi_entries = []
-# for idx, acpi_file in enumerate(acpi_files):
-#     entry = {
-#         "Comment": acpi_file,
-#         "Enabled": True,
-#         "Path": acpi_file
-#     }
-#     acpi_entries.append(entry)
-
-# # Update the existing plist with the new ACPI entries
-# existing_data.setdefault("ACPI", {}).setdefault("Add", []).extend(acpi_entries)
-
-# # Write the updated plist back to the file
-# with open(existing_plist, 'wb') as plist_file:
-#     plistlib.dump(existing_data, plist_file)
-
-# END_HEREDOC
-# )
-
-# echo "$acpi_python_script" | ACPI_FOLDER="$ACPI_FOLDER" PLIST_FILE="$PLIST_FILE" | python3 
-
-# curl -Ls https://paste.debian.net/plain/1288940 -o $dir/kext_script.py
-# KEXT_FOLDER="$KEXT_FOLDER" PLIST_PATH="$PLIST_FILE" python3 $dir/kext_script.py
-
-# info "Adding ACPI Entries into config.plist..."
-# info "Adding Tools Entries into config.plist..."
-# info "Adding Kext Entries into config.plist..."
-# info "Adding Driver Entries into config.plist..."
 
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
