@@ -30,6 +30,7 @@ case $os in
     Linux )
         info "Downloading PlistBuddy-Linux..."
         curl -Ls https://cdn.itsmac.eu.org/PlistBuddy-Linux -o $dir/temp/PlistBuddy-Linux
+        chmod +x $dir/temp/PlistBuddy-Linux
     ;;
     * )
         error "Unsupported."
