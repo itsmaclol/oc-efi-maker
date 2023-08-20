@@ -2507,7 +2507,7 @@ haswell_desktop_config_setup() {
             Y|y|YES|Yes|yes )
                 set_plist :Kernel:Quirks:CustomSMBIOSGuid True
             ;;
-            N|n|NO|No|no
+            N|n|NO|No|no )
                 set_plist :Kernel:Quirks:CustomSMBIOSGuid False
             ;;
             * )
