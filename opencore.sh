@@ -2,6 +2,11 @@
 
 os=$(uname)
 
+tmpdir=$(mktemp -d)
+dir=$tmpdir
+mkdir "$dir"/temp
+
+
 case $os in
     Darwin )
         if [ "$(uname -m | head -c2)" = "iP" ]; then
@@ -9,9 +14,13 @@ case $os in
             exit 1
         fi
     ;;
-    * )
-        error "Sorry, this script is meant to be used only on a macOS device."
+    Linux )
+        info "Downloading PlistBuddy-Linux..."
+        curl -Ls https://cdn.itsmac.eu.org/PlistBuddy-Linux -o $dir/temp/PlistBuddy-Linux
     ;;
+    * )
+        error "Unsupported."
+        exit 1
 esac
 
 # Thanks to palera1n install.sh and to checkra1n for this coloring scheme!
@@ -52,19 +61,47 @@ warning() {
 }
 
 add_plist() {
-    /usr/libexec/PlistBuddy -c "Add $1 $2" "$PLIST_FILE"
+    case $os in
+        Darwin )
+            /usr/libexec/PlistBuddy -c "Add $1 $2" "$PLIST_FILE" 
+        ;;
+        Linux )
+            $dir/temp/PlistBuddy-Linux -c "Add $1 $2" "$PLIST_FILE"
+        ;;
+    esac    
 }
 
 set_plist() {
-    /usr/libexec/PlistBuddy -c "Set $1 $2" "$PLIST_FILE"
+    case $os in
+        Darwin )
+            /usr/libexec/PlistBuddy -c "Set $1 $2" "$PLIST_FILE" 
+        ;;
+        Linux )
+            $dir/temp/PlistBuddy-Linux -c "Set $1 $2" "$PLIST_FILE"
+        ;;
+    esac  
 }
 
 import_plist() {
-    /usr/libexec/PlistBuddy -c "Import $1 $2" "$PLIST_FILE"
+    case $os in
+        Darwin )
+            /usr/libexec/PlistBuddy -c "Import $1 $2" "$PLIST_FILE" 
+        ;;
+        Linux )
+            $dir/temp/PlistBuddy-Linux -c "Import $1 $2" "$PLIST_FILE"
+        ;;
+    esac  
 }
 
 delete_plist() {
-    /usr/libexec/PlistBuddy -c "Delete $1 $2" "$PLIST_FILE"
+    case $os in
+        Darwin )
+            /usr/libexec/PlistBuddy -c "Delete $1 $2" "$PLIST_FILE" 
+        ;;
+        Linux )
+            $dir/temp/PlistBuddy-Linux -c "Delete $1 $2" "$PLIST_FILE"
+        ;;
+    esac  
 }
 clear
 echo "################################################################"
@@ -72,8 +109,6 @@ echo "Welcome to the OpenCore EFI Maker."
 echo "Made and maintained by Mac and the OpenCore Team."
 echo "################################################################"
 echo ""
-tmpdir=$(mktemp -d)
-dir=$tmpdir
 
 
 opencore() {
@@ -176,7 +211,6 @@ cp "$dir"/X64/EFI/OC/Drivers/ResetNvramEntry.efi $efi/Drivers/ResetNvramEntry.ef
 mkdir $efi/Tools
 cp "$dir"/X64/EFI/OC/Tools/OpenShell.efi $efi/Tools/
 
-mkdir "$dir"/temp
 info "Initial EFI Folder Setup is Done!"
 info "Downloading HfsPlus..."
 curl -Ls https://github.com/acidanthera/OcBinaryData/raw/master/Drivers/HfsPlus.efi -o "$efi"/Drivers/HfsPlus.efi
