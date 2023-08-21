@@ -61,6 +61,7 @@ INTELBTFIRMWARE_URL="https://api.github.com/repos/OpenIntelWireless/IntelBluetoo
 BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases/latest"
 NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
 VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
+WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releases/latest"
 # Logging functions
 
 add_plist() {
@@ -250,6 +251,18 @@ info "Downloading AppleALC..."
 curl -Ls $APPLEALC_RELEASE_URL -o "$dir"/temp/AppleALC.zip
 unzip -q "$dir"/temp/AppleALC.zip -d "$dir"/temp/AppleALC
 mv "$dir"/temp/AppleALC/AppleALC.kext $efi/Kexts/AppleALC.kext
+
+WHATEVERGREEN_RELEASE_URL=$(curl -s "$WHATEVERGREEN_URL" | jq -r '.assets[] | select(.name | match("WhateverGreen-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+
+if [ -z $WHATEVERGREEN_RELEASE_URL ]; then
+    error "AppleALC release URL not found, is GitHub rate-limiting you?"
+    exit 1
+fi
+
+info "Downloading WhateverGreen..."
+curl -Ls $WHATEVERGREEN_RELEASE_URL -o "$dir"/temp/WhateverGreen.zip
+unzip -q "$dir"/temp/WhateverGreen.zip -d "$dir"/temp/WhateverGreen
+mv "$dir"/temp/WhateverGreen/WhateverGreen.kext $efi/Kexts/WhateverGreen.kext
 
 info "Downloading Done!"
 
