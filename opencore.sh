@@ -920,6 +920,10 @@ info "Adding Kext entries into config.plist..."
 python3 $dir/OCSnapshot/OCSnapshot.py -i $efi/config.plist -s $dir/EFI/EFI/OC -c &> /dev/null
 
 
+
+delete_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd
+add_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd String
+set_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd en-US:0
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
