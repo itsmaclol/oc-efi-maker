@@ -2602,7 +2602,8 @@ haswell_desktop_config_setup() {
     #            smbios_guid
     #     esac
     # }
-    # smbios_guid
+    # smbios_guid 
+    #gumi note: srys >.<
     hpdesktop() {
         echo "################################################################"
         echo "Do you have a HP System?"
@@ -2734,6 +2735,505 @@ haswell_desktop_config_setup() {
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
 }
 
+broadwell_desktop_config_setup(){
+    # once again, idk how to do device properties -.-
+    cfg(){
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                echo > "" /dev/null
+            ;;
+            N|n|NO|No|no )
+                set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+            ;;
+            * )
+                error "Invalid Choice"
+                cfg
+        esac
+    }
+    cfg
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    set_plist set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 ) 
+             set_plist :Kernel:Quirks:XhciPortLimit False
+        ;;
+    esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    # gpu args go here
+    platforminfo(){
+        case $smbioschoice in
+            1 )
+               smbiosname="iMac17,1"
+            ;;
+            * )
+               error "Invalid Choice"
+               platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
+}
+
+kabylake_desktop_config_setup(){
+    #device properties go here
+        cfg(){
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                echo > "" /dev/null
+            ;;
+            N|n|NO|No|no )
+                set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+            ;;
+            * )
+                error "Invalid Choice"
+                cfg
+        esac
+    }
+    cfg
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    set_plist set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 ) 
+             set_plist :Kernel:Quirks:XhciPortLimit False
+        ;;
+    esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    # gpu args go here
+    platforminfo(){
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware"
+        echo "1. iMac18,1 - Used for computers utilizing the iGPU for displaying"
+        echo "2. iMac18,3 - Used for computers using a dGPU for displaying, and an iGPU for computing tasks only"
+        echo "################################################################"
+        read -r -p "Choose a number between 1-2: " smbios_choice
+        case $smbios_choice in
+            1 )
+               smbiosname=iMac18,1
+            ;;
+            2 )
+               smbiosname=iMac18,3
+            ;;
+            * )
+               error "Invalid Choice"
+               platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
+}
+
+coffeelake_desktop_config_setup(){
+    set_plist :Booter:Quirks:DevirtualizeMmio True
+    set_plist :Booter:Quirks:EnableWriteUnprotector False
+    set_plist :Booter:Quirks:ProtectUefiServices True
+    set_plist :Booter:Quirks:RebuildAppleMemoryMap True
+    set_plist :Booter:Quirks:ResizeAppleGpuBars -1
+    set_plist :Booter:Quirks:SyncRunetimePermissions True
+    # device properties here
+        cfg(){
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                echo > "" /dev/null
+            ;;
+            N|n|NO|No|no )
+                set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+            ;;
+            * )
+                error "Invalid Choice"
+                cfg
+        esac
+    }
+    cfg
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    set_plist set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 ) 
+             set_plist :Kernel:Quirks:XhciPortLimit False
+        ;;
+    esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    # gpu args go here
+        platforminfo(){
+        case $smbios_choice in
+            1 )
+               smbiosname=iMac19,1
+            ;;
+        esac
+        #not rly sure how to make it have one smbios without needing the smbios_choice thing
+    }
+    platforminfo
+    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
+}
+
+cometlake_desktop_config_setup(){
+    set_plist :Booter:Quirks:DevirtualizeMmio True
+    set_plist :Booter:Quirks:EnableWriteUnprotector False
+    set_plist :Booter:Quirks:ProtectUefiServices True
+    set_plist :Booter:Quirks:RebuildAppleMemoryMap True
+    set_plist :Booter:Quirks:ResizeAppleGpuBars -1
+    set_plist :Booter:Quirks:SyncRunetimePermissions True
+    #device properties here
+    case $os_choice in
+        4 )
+           import_plist :Kernel:Patch: #i dont know how to add a new dictionary >.<
+        ;;
+    esac
+        cfg(){
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                echo > "" /dev/null
+            ;;
+            N|n|NO|No|no )
+                set_plist :Kernel:Quirks:AppleXcpmCfgLock True
+            ;;
+            * )
+                error "Invalid Choice"
+                cfg
+        esac
+    }
+    cfg
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist :Kernel:Quirks:DisableIoMapper True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist :Kernel:Quirks:LapicKernelPanic True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    set_plist set_plist :Kernel:Quirks:PanicNoKextDump True
+    set_plist set_plist :Kernel:Quirks:PowerTimeoutKernelPanic True
+    case $os_choice in
+        4|5 ) 
+             set_plist :Kernel:Quirks:XhciPortLimit False
+        ;;
+    esac
+    set_plist :Misc:Debug:AppleDebug True
+    set_plist :Misc:Debug:ApplePanic True
+    set_plist :Misc:Debug:DisableWatchDog True
+    set_plist :Misc:Debug:Target 67
+    set_plist :Misc:Security:AllowSetDefault True
+    set_plist :Misc:Security:BlacklistAppleUpdate True
+    set_plist :Misc:Security:ScanPolicy 0
+    set_plist :Misc:Security:SecureBootModel Default
+    set_plist :Misc:Security:Vault Optional
+    set_plist :NVRAM::Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:boot-args -v debug=0x100 alcid=1 keepsyms=1
+    # gpu and network args go here
+    platforminfo(){
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware"
+        echo "1. iMac20,1 - i7-10700K and lower (ie. 8 cores and lower)"
+        echo "2. iMac20,2 - i9-10850K and higher (ie. 10 cores)"
+        echo "################################################################"
+        read -r -p "Choose a number between 1-2: " smbios_choice
+        case $smbios_choice in
+            1 )
+               smbiosname=iMac20,1
+            ;;
+            2 )
+               smbiosname=iMac20,2
+            ;;
+            * )
+               error "Invalid Choice"
+               platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+        smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist :PlatformInfo::Generic:SystemProductName $smbiosname
+    set_plist :PlatformInfo::Generic:SystemSerialNumber $SN
+    set_plist :PlatformInfo:Generic:MLB $MLB
+    set_plist :PlatformInfo:Generic:SystemUUID $UUID
+    case $os_choice in
+        4 )
+            set_plist :UEFI:APFS:MinVersion 1412101001000000
+            set_plist :UEFI:APFS:MinDate 20200306
+        ;;
+        5 )
+            set_plist :UEFI:APFS:MinVersion 945275007000000
+            set_plist :UEFI:APFS:MinDate 20190820
+        ;;
+    esac
+    set_plist :UEFI:Quirks:IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist :UEFI:Quirks:UnblockFsConnect True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
+    #gumi note: mayb add smth pertaining to 2020+ bios regarding Above4G
+}
+
 cpu_rev_laptop() {
     echo "################################################################"
     echo "Now, we need to ask you what generation your processor is."
@@ -2787,7 +3287,7 @@ cpu_rev_desktop() {
     # echo "7. Bulldozer(15h) and Jaguar (16h)"
     # echo "8. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
-    read -r -p "Pick a number 1-8: " desktop_cpu_gen_choice
+    read -r -p "Pick a number 1-6: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
         1 )
             haswell_desktop_config_setup
