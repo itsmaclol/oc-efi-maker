@@ -482,6 +482,7 @@ wifi() {
         curl -Ls $AIRPORT_BRCM_RELEASE_URL -o "$dir"/temp/AirportBrcmFixup.zip
         unzip -q "$dir"/temp/AirportBrcmFixup.zip -d "$dir"/temp/AirportBrcmFixup
         mv "$dir"/temp/AirportBrcmFixup/AirportBrcmFixup.kext $efi/Kexts/AirportBrcmFixup.kext
+        
     ;;
     3 )
         echo "" > /dev/null
@@ -539,10 +540,10 @@ bluetooth() {
             ;;
             2|1 )
                 mv $dir/temp/BrcmPatchRAM/BrcmPatchRAM3.kext $efi/Kexts/BrcmPatchRAM3.kext
-                mv $dir/temp/BrcmPatchRAM/BrcmBlueteoothInjector.kext $efi/Kexts/BrcmBluetoothInjector.kext
             ;;
             4|3 )
                 mv $dir/temp/BrcmPatchRAM/BrcmPatchRAM3.kext $efi/Kexts/BrcmPatchRAM3.kext
+                mv $dir/temp/BrcmPatchRAM/BrcmBlueteoothInjector.kext $efi/Kexts/BrcmBluetoothInjector.kext
             ;;
         esac
     ;;
@@ -921,9 +922,10 @@ python3 $dir/OCSnapshot/OCSnapshot.py -i $efi/config.plist -s $dir/EFI/EFI/OC -c
 
 
 
-delete_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd
-add_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd String
-set_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang:kbd en-US:0
+delete_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd"
+add_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd" String
+set_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd" en-US:0
+
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -2604,26 +2606,6 @@ haswell_broadwell_desktop_config_setup() {
     dmvt
     set_plist :Kernel:Quirks:AppleCpuPmCfgLock True
     set_plist :Kernel:Quirks:AppleXcpmCfgLock True
-    #mac note: ???????????????????????
-    # smbios_guid(){
-    #     echo "################################################################"
-    #     echo "Do you have a Dell or VAIO system?"
-    #     echo "################################################################"
-    #     read -r -p "y/n: " smbios_guid_choice
-    #     case $smbios_guid_choice in
-    #         Y|y|YES|Yes|yes )
-    #             set_plist :Kernel:Quirks:CustomSMBIOSGuid True
-    #         ;;
-    #         N|n|NO|No|no )
-    #             echo "" > /dev/null
-    #         ;;
-    #         * )
-    #            error "Invalid Choice"
-    #            smbios_guid
-    #     esac
-    # }
-    # smbios_guid 
-    #gumi note: srys >.<
     hpdesktop() {
         echo "################################################################"
         echo "Do you have a HP System?"
