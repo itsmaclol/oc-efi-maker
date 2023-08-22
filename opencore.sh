@@ -935,6 +935,9 @@ ice_lake_laptop_config_setup() {
             y|Y|Yes|yes|YES )
                 set_plist Set :Booter:Quirks:ProtectMemoryRegions True
             ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
             * )
                 error "Invalid Choice" 
                 chromebook
