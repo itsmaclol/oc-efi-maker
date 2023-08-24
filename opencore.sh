@@ -123,7 +123,7 @@ opencore() {
     echo "################################################################"
     read -r -p "1 or 2: " oc_choice
 
-
+    OC_RELEASE_NUMBER=$(curl -s "$OC_URL" | jq -r '.tag_name')
     RELEASE_URL=$(curl -s "$OC_URL" | jq -r '.assets[] | select(.name | match("OpenCore-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
     DEBUG_URL=$(curl -s "$OC_URL" | jq -r '.assets[] | select(.name | match("OpenCore-[0-9]\\.[0-9]\\.[0-9]-DEBUG")) | .browser_download_url')
 
@@ -135,21 +135,21 @@ opencore() {
     case $oc_choice in
         1 )
             DOWNLOAD_URL="$RELEASE_URL"
-            FILE_NAME="OpenCore-RELEASE.zip"
+            rldb="Release"
         ;;
         2 )
             DOWNLOAD_URL="$DEBUG_URL"
-            FILE_NAME="OpenCore-DEBUG.zip"
+            rldb="Debug"
         ;;
         * )
             error "Invalid Choice"
             opencore
     esac
-
-    info "Downloading OpenCore..."
-    curl -Ls $DOWNLOAD_URL -o $dir/$FILE_NAME
-    unzip -q "$dir/$FILE_NAME" -d $dir
-    info "Saved at $dir/$FILE_NAME"
+    FILE_NAME="OpenCore-$rldb-$OC_RELEASE_NUMBER"
+    info "Downloading $FILE_NAME..."
+    curl -Ls $DOWNLOAD_URL -o $dir/$FILE_NAME.zip
+    unzip -q "$dir/$FILE_NAME.zip" -d $dir
+    info "Saved at $dir/$FILE_NAME.zip"
 }
 opencore 
 
@@ -922,9 +922,7 @@ python3 $dir/OCSnapshot/OCSnapshot.py -i $efi/config.plist -s $dir/EFI/EFI/OC -c
 
 
 
-delete_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd"
-add_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd" String
-set_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:"prev-lang:kbd" en-US:0
+set_plist :NVRAM:Add:7C436110-AB2A-4BBB-A880-FE41995C9F82:prev-lang\:kbd 656e2d55533a30
 
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
