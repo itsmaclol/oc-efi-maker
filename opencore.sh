@@ -25,7 +25,6 @@ warning() {
 }
 
 
-
 case $os in
     Darwin )
         if [ "$(uname -m | head -c2)" = "iP" ]; then
@@ -42,7 +41,6 @@ case $os in
         error "Unsupported."
         exit 1
 esac
-
 
 OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
 LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
@@ -223,7 +221,8 @@ if [ -z $LILU_RELEASE_URL ]; then
     error "Lilu release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
-info "Downloading Lilu..."
+LILU_RELEASE_NUMBER=$(curl -s "$LILU_URL" | jq -r '.tag_name')
+info "Downloading Lilu $LILU_RELEASE_NUMBER..."
 curl -Ls $LILU_RELEASE_URL -o "$dir"/temp/Lilu.zip
 unzip -q "$dir"/temp/Lilu.zip -d "$dir"/temp/Lilu
 mv "$dir"/temp/Lilu/Lilu.kext $efi/Kexts/Lilu.kext
@@ -235,7 +234,8 @@ if [ -z $VIRTUALSMC_RELEASE_URL ]; then
     error "VirtualSMC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
-info "Downloading VirtualSMC..."
+VIRTUALSMC_RELEASE_NUMBER=$(curl -s "$VIRTUALSMC_URL" | jq -r '.tag_name')
+info "Downloading VirtualSMC $VIRTUALSMC_RELEASE_NUMBER..."
 curl -Ls $VIRTUALSMC_RELEASE_URL -o "$dir"/temp/VirtualSMC.zip
 unzip -q "$dir"/temp/VirtualSMC.zip -d "$dir"/temp/VirtualSMC
 mv "$dir"/temp/VirtualSMC/Kexts/VirtualSMC.kext $efi/Kexts/VirtualSMC.kext
@@ -247,7 +247,8 @@ if [ -z $APPLEALC_RELEASE_URL ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
-info "Downloading AppleALC..."
+APPLEALC_RELEASE_NUMBER=$(curl -s "$APPLEALC_URL" | jq -r '.tag_name')
+info "Downloading AppleALC $APPLEALC_RELEASE_NUMBER..."
 curl -Ls $APPLEALC_RELEASE_URL -o "$dir"/temp/AppleALC.zip
 unzip -q "$dir"/temp/AppleALC.zip -d "$dir"/temp/AppleALC
 mv "$dir"/temp/AppleALC/AppleALC.kext $efi/Kexts/AppleALC.kext
@@ -258,8 +259,8 @@ if [ -z $WHATEVERGREEN_RELEASE_URL ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
-
-info "Downloading WhateverGreen..."
+WHATEVERGREEN_RELEASE_NUMBER=$(curl -s "$WHATEVERGREEN_URL" | jq -r '.tag_name')
+info "Downloading WhateverGreen $WHATEVERGREEN_RELEASE_NUMBER..."
 curl -Ls $WHATEVERGREEN_RELEASE_URL -o "$dir"/temp/WhateverGreen.zip
 unzip -q "$dir"/temp/WhateverGreen.zip -d "$dir"/temp/WhateverGreen
 mv "$dir"/temp/WhateverGreen/WhateverGreen.kext $efi/Kexts/WhateverGreen.kext
@@ -348,7 +349,7 @@ ethernet() {
                 error "IntelMausi release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
-            info "Downloading IntelMausi.."
+            info "Downloading IntelMausi..."
             curl -Ls $INTEL_MAUSI_RELEASE_URL -o "$dir"/temp/IntelMausi.zip
             unzip -q "$dir"/temp/IntelMausi.zip -d "$dir"/temp/IntelMausi
             mv "$dir"/temp/IntelMausi/IntelMausi.kext $efi/Kexts/IntelMausi.kext
@@ -405,7 +406,6 @@ ethernet() {
                 error "LucyRTL8125Ethernet release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
-
             info "Downloading LucyRTL8125Ethernet..."
             curl -Ls $LUCYRTL8125ETHERNET_RELEASE_URL -o "$dir"/temp/LucyRTL8125Ethernet.zip
             unzip -q "$dir"/temp/LucyRTL8125Ethernet.zip -d "$dir"/temp/LucyRTL8125Ethernet
