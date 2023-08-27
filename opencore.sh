@@ -31,6 +31,20 @@ case $os in
             error "This script is not meant to be used on an iDevice. Please use a Mac/Hackintosh to use this script."
             exit 1
         fi
+
+        if ! command -v "brew" > /dev/null; then
+            warning "Homebrew is not installed. Would you like to install it? (y/n)"
+            read -r -p "y/n: " install_brew
+            case $install_brew in
+                y|Y|YES|Yes|yes )
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+                ;;
+                n|N|No|NO|no )
+                    error "Brew is needed to install dependencies"
+                    exit 1
+                ;;
+            esac
+        fi 
     ;;
     Linux )
         info "Downloading PlistBuddy-Linux..."
@@ -41,6 +55,34 @@ case $os in
         error "Unsupported."
         exit 1
 esac
+
+dependencies=("jq" "curl" "python3" "xxd")
+missing_dependencies=()
+
+for dep in "${dependencies[@]}"; do
+    if ! command -v "$dep" > /dev/null; then
+        missing_dependencies+=("$dep")
+    fi
+done
+
+if [[ ${#missing_dependencies[@]} -gt 0 ]]; then
+    info "Dependencies are missing, would you like to install them?"
+    read -r -p "y/n: " install_deps
+
+    if [[ "$install_deps" == "y" ]]; then
+        if [[ "$(uname)" == "Darwin" && -x "$(command -v brew)" ]]; then
+            brew install "${missing_dependencies[@]}"
+            info "Dependencies installed, please rerun this script."
+            exit 1
+        elif [[ "$(uname)" == "Linux" ]]; then
+            sudo apt-get install "${missing_dependencies[@]}"
+            info "Dependencies installed, please rerun this script."
+            exit 1
+        else
+            echo "Unsupported operating system. You need to install the missing dependencies manually."
+        fi
+    fi
+fi
 
 OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
 LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
@@ -1398,7 +1440,7 @@ coffee_whiskeylake_laptop_config_setup() {
             ;;
         esac
     }
-    ud620 
+    uhd620 
     dmvt() {
     echo "################################################################"
     echo "Can you set your DVMT-prealloc to 256MB or higher?"
@@ -1632,7 +1674,7 @@ kabylake_laptop_config_setup() {
             ;;
         esac
     }
-    ud620
+    uhd620
     dmvt() {
     echo "################################################################"
     echo "Can you set your DVMT-prealloc to 256MB or higher?"
@@ -2271,6 +2313,7 @@ broadwell_laptop_config_setup() {
             ;;
         esac
     }
+    platforminfo
     smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
@@ -2573,8 +2616,13 @@ haswell_broadwell_desktop_config_setup() {
             n|N|NO|No|no )
                 echo "" > /dev/null
             ;;
+            * )
+                error "Invalid Choice"
+                hd4400
+            ;;
         esac
     }
+    hd4400
     dmvt() {
         echo "################################################################"
         echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
@@ -3195,12 +3243,11 @@ cpu_rev_desktop() {
     esac
 }
 
-
-case $pc_choice in
-    1 )
-        cpu_rev_desktop
-    ;;
-    2 )
-        cpu_rev_laptop
-    ;;
-esac
+# case $pc_choice in # Mac note: i dont know why this makes shellcheck hang and memory leak
+#     1 )
+#         cpu_rev_desktop
+#     ;;
+#     2 )
+#         cpu_rev_laptop
+#     ;;
+# esac
