@@ -25,9 +25,9 @@ warning() {
 }
 clear
 internet_check() {
-    ping -c 1 -W 1 google.com > /dev/null 2>&1
+    cmd=$(ping -c 1 -W 1 google.com > /dev/null 2>&1)
 
-    if [ $? -eq 0 ]; then
+    if [ "$cmd" -eq 0 ]; then
         echo "" > /dev/null
     else
         error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
@@ -217,22 +217,22 @@ WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releas
 #VIRTUALSMC_AMD2_URL="url here"
 
 info "Downloading plisteditor.py..."
-curl -Ls https://cdn.itsmac.eu.org/plisteditor.py -o $dir/temp/plisteditor.py
+curl -Ls https://cdn.itsmac.eu.org/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
-    python3 $dir/temp/plisteditor.py add  $1 --type $2 --path $efi/config.plist
+    python3 "$dir"/temp/plisteditor.py add  "$1" --type "$2" --path "$efi"/config.plist
 }
 
 set_plist() {
-    python3 $dir/temp/plisteditor.py set  $1 --type $2 --value $3 --path $efi/config.plist
+    python3 "$dir"/temp/plisteditor.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
 }
 
 
 delete_plist() {
-    python3 $dir/temp/plisteditor.py delete $1 --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
 }
 
 change_plist() {
-    python3 $dir/temp/plisteditor.py change $1 --new_type $2 --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
 }
 echo "################################################################"
 echo "Welcome to the OpenCore EFI Maker."
@@ -273,8 +273,8 @@ opencore() {
     esac
     FILE_NAME="OpenCore-$rldb-$OC_RELEASE_NUMBER"
     info "Downloading $FILE_NAME..."
-    curl -Ls $DOWNLOAD_URL -o $dir/$FILE_NAME.zip
-    unzip -q "$dir/$FILE_NAME.zip" -d $dir
+    curl -Ls "$DOWNLOAD_URL" -o "$dir"/"$FILE_NAME".zip
+    unzip -q "$dir"/"$FILE_NAME".zip -d "$dir"
     info "Saved at $dir/$FILE_NAME.zip"
 }
 opencore 
@@ -296,27 +296,27 @@ macos_choice(){
         1 )
             os_name="Ventura"  
             info "Downloading macOS Ventura, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download   
+            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download   
         ;;
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download
+            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download
         ;;
         3 )
             os_name="BigSur"
             info "Downloading macOS Big Sur, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download
+            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download
         ;;
         4 )
             os_name="Catalina"
             info "Downloading macOS Catalina, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download
+            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download
         ;;
         5 )
             os_name="Mojave"
             info "Downloading macOS Mojave, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download
+            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download
         ;;
         * )
             error "Invalid Choice"
@@ -327,7 +327,7 @@ macos_choice
 
 info "Setting up EFI Folder Structure..."
 sleep 3
-efi="$dir/EFI/EFI/OC"
+efi="$dir"/EFI/EFI/OC
 mkdir -p "$efi"
 cp -r "$dir"/X64/EFI/BOOT "$dir"/EFI/EFI/BOOT
 cp -r "$dir"/X64/EFI/OC/ACPI "$efi"/ACPI
@@ -335,11 +335,11 @@ cp -r "$dir"/X64/EFI/OC/Kexts "$efi"/Kexts
 cp -r "$dir"/X64/EFI/OC/Resources "$efi"/Resources
 cp "$dir"/X64/EFI/OC/OpenCore.efi "$efi"/OpenCore.efi
 cp "$dir"/Docs/Sample.plist "$efi"/config.plist
-mkdir $efi/Drivers
+mkdir "$efi"/Drivers
 cp "$dir"/X64/EFI/OC/Drivers/OpenRuntime.efi "$efi"/Drivers/OpenRuntime.efi
-cp "$dir"/X64/EFI/OC/Drivers/ResetNvramEntry.efi $efi/Drivers/ResetNvramEntry.efi
-mkdir $efi/Tools
-cp "$dir"/X64/EFI/OC/Tools/OpenShell.efi $efi/Tools/
+cp "$dir"/X64/EFI/OC/Drivers/ResetNvramEntry.efi "$efi"/Drivers/ResetNvramEntry.efi
+mkdir "$efi"/Tools
+cp "$dir"/X64/EFI/OC/Tools/OpenShell.efi "$efi"/Tools/
 info "Downloading HfsPlus..."
 curl -Ls https://github.com/acidanthera/OcBinaryData/raw/master/Drivers/HfsPlus.efi -o "$efi"/Drivers/HfsPlus.efi
 LILU_RELEASE_URL=$(curl -s "$LILU_URL" | jq -r '.assets[] | select(.name | match("Lilu-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
@@ -349,47 +349,47 @@ if [ -z "$LILU_RELEASE_URL" ]; then
 fi
 LILU_RELEASE_NUMBER=$(curl -s "$LILU_URL" | jq -r '.tag_name')
 info "Downloading Lilu $LILU_RELEASE_NUMBER..."
-curl -Ls $LILU_RELEASE_URL -o "$dir"/temp/Lilu.zip
+curl -Ls "$LILU_RELEASE_URL" -o "$dir"/temp/Lilu.zip
 unzip -q "$dir"/temp/Lilu.zip -d "$dir"/temp/Lilu
-mv "$dir"/temp/Lilu/Lilu.kext $efi/Kexts/Lilu.kext
+mv "$dir"/temp/Lilu/Lilu.kext "$efi"/Kexts/Lilu.kext
 
 
 
 VIRTUALSMC_RELEASE_URL=$(curl -s "$VIRTUALSMC_URL" | jq -r '.assets[] | select(.name | match("VirtualSMC-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-if [ -z $VIRTUALSMC_RELEASE_URL ]; then
+if [ -z "$VIRTUALSMC_RELEASE_URL" ]; then
     error "VirtualSMC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
 VIRTUALSMC_RELEASE_NUMBER=$(curl -s "$VIRTUALSMC_URL" | jq -r '.tag_name')
 info "Downloading VirtualSMC $VIRTUALSMC_RELEASE_NUMBER..."
-curl -Ls $VIRTUALSMC_RELEASE_URL -o "$dir"/temp/VirtualSMC.zip
+curl -Ls "$VIRTUALSMC_RELEASE_URL" -o "$dir"/temp/VirtualSMC.zip
 unzip -q "$dir"/temp/VirtualSMC.zip -d "$dir"/temp/VirtualSMC
-mv "$dir"/temp/VirtualSMC/Kexts/VirtualSMC.kext $efi/Kexts/VirtualSMC.kext
+mv "$dir"/temp/VirtualSMC/Kexts/VirtualSMC.kext "$efi"/Kexts/VirtualSMC.kext
 
 
 APPLEALC_RELEASE_URL=$(curl -s "$APPLEALC_URL" | jq -r '.assets[] | select(.name | match("AppleALC-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
-if [ -z $APPLEALC_RELEASE_URL ]; then
+if [ -z "$APPLEALC_RELEASE_URL" ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
 APPLEALC_RELEASE_NUMBER=$(curl -s "$APPLEALC_URL" | jq -r '.tag_name')
 info "Downloading AppleALC $APPLEALC_RELEASE_NUMBER..."
-curl -Ls $APPLEALC_RELEASE_URL -o "$dir"/temp/AppleALC.zip
+curl -Ls "$APPLEALC_RELEASE_URL" -o "$dir"/temp/AppleALC.zip
 unzip -q "$dir"/temp/AppleALC.zip -d "$dir"/temp/AppleALC
-mv "$dir"/temp/AppleALC/AppleALC.kext $efi/Kexts/AppleALC.kext
+mv "$dir"/temp/AppleALC/AppleALC.kext "$efi"/Kexts/AppleALC.kext
 
 WHATEVERGREEN_RELEASE_URL=$(curl -s "$WHATEVERGREEN_URL" | jq -r '.assets[] | select(.name | match("WhateverGreen-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
-if [ -z $WHATEVERGREEN_RELEASE_URL ]; then
+if [ -z "$WHATEVERGREEN_RELEASE_URL" ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
 WHATEVERGREEN_RELEASE_NUMBER=$(curl -s "$WHATEVERGREEN_URL" | jq -r '.tag_name')
 info "Downloading WhateverGreen $WHATEVERGREEN_RELEASE_NUMBER..."
-curl -Ls $WHATEVERGREEN_RELEASE_URL -o "$dir"/temp/WhateverGreen.zip
+curl -Ls "$WHATEVERGREEN_RELEASE_URL" -o "$dir"/temp/WhateverGreen.zip
 unzip -q "$dir"/temp/WhateverGreen.zip -d "$dir"/temp/WhateverGreen
-mv "$dir"/temp/WhateverGreen/WhateverGreen.kext $efi/Kexts/WhateverGreen.kext
+mv "$dir"/temp/WhateverGreen/WhateverGreen.kext "$efi"/Kexts/WhateverGreen.kext
 
 info "Downloading Done!"
 
@@ -424,14 +424,14 @@ vsmcplugins() {
     read -r -p "y/n: " vsmc_plugins
     case $vsmc_plugins in
     y|Y|Yes|YES|yes )
-        mv "$dir"/temp/VirtualSMC/Kexts/SMCSuperIO.kext $efi/Kexts/SMCSuperIO.kext
-        mv "$dir"/temp/VirtualSMC/Kexts/SMCProcessor.kext $efi/Kexts/SMCProcessor.kext
+        mv "$dir"/temp/VirtualSMC/Kexts/SMCSuperIO.kext "$efi"/Kexts/SMCSuperIO.kext
+        mv "$dir"/temp/VirtualSMC/Kexts/SMCProcessor.kext "$efi"/Kexts/SMCProcessor.kext
         case $pc_choice in
             1 )
                 echo "" > /dev/null
             ;;
             2 ) 
-                mv "$dir"/temp/VirtualSMC/Kexts/SMCBatteryManager.kext $efi/Kexts/SMCBatteryManager.kext
+                mv "$dir"/temp/VirtualSMC/Kexts/SMCBatteryManager.kext "$efi"/Kexts/SMCBatteryManager.kext
             ;;
             * )
                 error "Invalid choice"
@@ -471,14 +471,14 @@ ethernet() {
         1 )
             INTEL_MAUSI_RELEASE_URL=$(curl -s "$INTEL_MAUSI_URL" | jq -r '.assets[] | select(.name | match("IntelMausi-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
-            if [ -z $INTEL_MAUSI_RELEASE_URL ]; then
+            if [ -z "$INTEL_MAUSI_RELEASE_URL" ]; then
                 error "IntelMausi release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
             info "Downloading IntelMausi..."
-            curl -Ls $INTEL_MAUSI_RELEASE_URL -o "$dir"/temp/IntelMausi.zip
+            curl -Ls "$INTEL_MAUSI_RELEASE_URL" -o "$dir"/temp/IntelMausi.zip
             unzip -q "$dir"/temp/IntelMausi.zip -d "$dir"/temp/IntelMausi
-            mv "$dir"/temp/IntelMausi/IntelMausi.kext $efi/Kexts/IntelMausi.kext
+            mv "$dir"/temp/IntelMausi/IntelMausi.kext "$efi"/Kexts/IntelMausi.kext
         ;;
         2 )
             case $os_choice in
@@ -491,33 +491,33 @@ ethernet() {
             info "Downloading AppleIGB..."
             curl -Ls $APPLEIGB_URL -o "$dir"/temp/AppleIGB.zip
             unzip -q "$dir"/temp/AppleIGB -d "$dir"/temp/AppleIGB
-            mv "$dir"/temp/AppleIGB/AppleIGB.kext $efi/Kexts/AppleIGB.kext
+            mv "$dir"/temp/AppleIGB/AppleIGB.kext "$efi"/Kexts/AppleIGB.kext
         ;;
         3 )
             info "Downloading SmallTreeIntel82576..."
             curl -Ls $SMALLTREEINTEL82576_URL -o "$dir"/temp/SmallTreeIntel82576.zip
             unzip -q "$dir"/temp/SmallTreeIntel82576.zip -d "$dir"/temp/SmallTreeIntel82576
-            mv "$dir"/temp/SmallTreeIntel82576/SmallTreeIntel82576.kext $efi/Kexts/SmallTreeIntel82576.kext
+            mv "$dir"/temp/SmallTreeIntel82576/SmallTreeIntel82576.kext "$efi"/Kexts/SmallTreeIntel82576.kext
         ;;
         4 )
             info "Downloading AtherosE2200Ethernet..."
             curl -Ls $ATHEROSE2200ETHERNET_URL -o "$dir"/temp/AtherosE2200Ethernet.zip
             unzip -q "$dir"/temp/AtherosE2200Ethernet.zip -d "$dir"/temp/AtherosE2200Ethernet
-            mv "$dir"/temp/AtherosE2200Ethernet/AtherosE2200Ethernet-V2.2.2/Release/AtherosE2200Ethernet.kext $efi/Kexts/AtherosE2200Ethernet.kext
+            mv "$dir"/temp/AtherosE2200Ethernet/AtherosE2200Ethernet-V2.2.2/Release/AtherosE2200Ethernet.kext "$efi"/Kexts/AtherosE2200Ethernet.kext
         ;;
         5 )
             
             REALTEKRTL8111_RELEASE_URL=$(curl -s "$REALTEKRTL8111_URL" | jq -r '.assets[] | select(.name | match("RealtekRTL8111-V[0-9]\\.[0-9]\\.[0-9]")) | .browser_download_url')
             REALTEKRTL8111_RELEASE_NR=$(echo "$(curl -s "$REALTEKRTL8111_URL")" | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
 
-            if [ -z $REALTEKRTL8111_RELEASE_URL ]; then
+            if [ -z "$REALTEKRTL8111_RELEASE_URL" ]; then
                 error "RealtekRTL8111 release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
             info "Downloading RealtekRTL8111..."
-            curl -Ls $REALTEKRTL8111_RELEASE_URL -o "$dir"/temp/RealtekRTL8111.zip
+            curl -Ls "$REALTEKRTL8111_RELEASE_URL" -o "$dir"/temp/RealtekRTL8111.zip
             unzip -q "$dir"/temp/RealtekRTL8111.zip -d "$dir"/temp/RealtekRTL8111
-            mv "$dir"/temp/RealtekRTL8111/RealtekRTL8111-V$REALTEKRTL8111_RELEASE_NR/Release/RealtekRTL8111.kext $efi/Kexts/RealtekRTL8111.kext
+            mv "$dir"/temp/RealtekRTL8111/RealtekRTL8111-V"$REALTEKRTL8111_RELEASE_NR"/Release/RealtekRTL8111.kext "$efi"/Kexts/RealtekRTL8111.kext
         ;;
         6 )
             case $oc_choice in 
@@ -528,14 +528,14 @@ ethernet() {
             esac
             
             LUCYRTL8125ETHERNET_RELEASE_URL=$(curl -s "$LUCYRTL8125ETHERNET_URL" | jq -r '.assets[] | select(.name | match("LucyRTL8125Ethernet-V[0-9]\\.[0-9]\\.[0-9]")) | .browser_download_url')
-            if [ -z $LUCYRTL8125ETHERNET_RELEASE_URL ]; then
+            if [ -z "$LUCYRTL8125ETHERNET_RELEASE_URL" ]; then
                 error "LucyRTL8125Ethernet release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
             info "Downloading LucyRTL8125Ethernet..."
-            curl -Ls $LUCYRTL8125ETHERNET_RELEASE_URL -o "$dir"/temp/LucyRTL8125Ethernet.zip
+            curl -Ls "$LUCYRTL8125ETHERNET_RELEASE_URL" -o "$dir"/temp/LucyRTL8125Ethernet.zip
             unzip -q "$dir"/temp/LucyRTL8125Ethernet.zip -d "$dir"/temp/LucyRTL8125Ethernet
-            mv "$dir"/temp/LucyRTL8125Ethernet/LucyRTL8125Ethernet-V1.1.0/Release/LucyRTL8125Ethernet.kext $efi/Kexts/LucyRTL8125Ethernet.kext
+            mv "$dir"/temp/LucyRTL8125Ethernet/LucyRTL8125Ethernet-V1.1.0/Release/LucyRTL8125Ethernet.kext "$efi"/Kexts/LucyRTL8125Ethernet.kext
         ;;
         7 )
             echo "" > /dev/null
@@ -563,14 +563,14 @@ sleep 7
 
 USBTOOLBOX_KEXT_RELEASE_URL=$(curl -s "$USBTOOLBOX_KEXT_URL" | jq -r '.assets[] | select(.name | match("USBToolBox-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
-if [ -z $USBTOOLBOX_KEXT_RELEASE_URL ]; then
+if [ -z "$USBTOOLBOX_KEXT_RELEASE_URL" ]; then
     error "USBToolBox Kext release URL not found, is GitHub rate-limiting you?"
     exit 1
 fi
 
-curl -Ls $USBTOOLBOX_KEXT_RELEASE_URL -o "$dir"/temp/USBToolbox.zip
+curl -Ls "$USBTOOLBOX_KEXT_RELEASE_URL" -o "$dir"/temp/USBToolbox.zip
 unzip -q "$dir"/temp/USBToolbox.zip -d "$dir"/temp/USBToolBox
-mv "$dir"/temp/USBToolBox/USBToolbox.kext $efi/Kexts/USBToolBox.kext
+mv "$dir"/temp/USBToolBox/USBToolbox.kext "$efi"/Kexts/USBToolBox.kext
 
 wifi() {
     echo "################################################################"
@@ -586,28 +586,28 @@ wifi() {
     1 )
         ITLWM_RELEASE_URL=$(curl -s $ITLWM_URL | jq -r --arg osname "$os_name" '.assets[] | select(.name | endswith("_stable_" + $osname + ".kext.zip")) | .browser_download_url')
 
-        if [ -z $ITLWM_RELEASE_URL ]; then
+        if [ -z "$ITLWM_RELEASE_URL" ]; then
             error "AirportItlwm release URL not found, is GitHub rate-limiting you?"
             exit 1
         fi
 
         info "Downloading AirportItlwm-$os_name..."
-        curl -Ls $ITLWM_RELEASE_URL -o "$dir"/temp/AirportItlwm.zip
+        curl -Ls "$ITLWM_RELEASE_URL" -o "$dir"/temp/AirportItlwm.zip
         unzip -q "$dir"/temp/AirportItlwm.zip -d "$dir"/temp/AirportItlwm
-        mv "$dir"/temp/AirportItlwm/Airportitlwm.kext $efi/Kexts/Airportitlwm.kext
+        mv "$dir"/temp/AirportItlwm/Airportitlwm.kext "$efi"/Kexts/Airportitlwm.kext
     ;;
     2 )
         
         AIRPORT_BRCM_RELEASE_URL=$(curl -s "$AIRPORT_BRCM_URL" | jq -r '.assets[] | select(.name | match("AirportBrcmFixup-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
-        if [ -z $AIRPORT_BRCM_RELEASE_URL ]; then
+        if [ -z "$AIRPORT_BRCM_RELEASE_URL" ]; then
             error "AirportBrcmFixup release URL not found, is GitHub rate-limiting you?"
             exit 1
         fi
         info "Downloading AirportBrcmFixup..."
-        curl -Ls $AIRPORT_BRCM_RELEASE_URL -o "$dir"/temp/AirportBrcmFixup.zip
+        curl -Ls "$AIRPORT_BRCM_RELEASE_URL" -o "$dir"/temp/AirportBrcmFixup.zip
         unzip -q "$dir"/temp/AirportBrcmFixup.zip -d "$dir"/temp/AirportBrcmFixup
-        mv "$dir"/temp/AirportBrcmFixup/AirportBrcmFixup.kext $efi/Kexts/AirportBrcmFixup.kext
+        mv "$dir"/temp/AirportBrcmFixup/AirportBrcmFixup.kext "$efi"/Kexts/AirportBrcmFixup.kext
         
     ;;
     3 )
@@ -632,25 +632,25 @@ bluetooth() {
     case $bt_choice in
     1 )
         INTELBTFIRMWARE_RELEASE_URL=$(curl -s "$INTELBTFIRMWARE_URL" | jq -r '.assets[] | select(.name | match("IntelBluetooth-v[0-9]\\.[0-9]\\.[0-9]")) | .browser_download_url')
-        if [ -z $INTELBTFIRMWARE_RELEASE_URL ]; then
+        if [ -z "$INTELBTFIRMWARE_RELEASE_URL" ]; then
             error "IntelBluetoothFirmware release URL not found, is GitHub rate-limiting you?"
             exit 1
         fi
         info "Downloading IntelBluetoothFirmware..."
-        curl -Ls $INTELBTFIRMWARE_RELEASE_URL -o "$dir"/temp/IntelBluetoothFirmware.zip
-        unzip -q $dir/temp/IntelBluetoothFirmware.zip -d "$dir"/temp/IntelBluetoothFirmware
-        mv $dir/temp/IntelBluetoothFirmware/IntelBluetoothFirmware.kext $efi/Kexts/IntelBluetoothFirmware.kext
-        mv $dir/temp/IntelBluetoothFirmware/IntelBTPatcher.kext $efi/Kexts/IntelBTPatcher.kext
+        curl -Ls "$INTELBTFIRMWARE_RELEASE_URL" -o "$dir"/temp/IntelBluetoothFirmware.zip
+        unzip -q "$dir"/temp/IntelBluetoothFirmware.zip -d "$dir"/temp/IntelBluetoothFirmware
+        mv "$dir"/temp/IntelBluetoothFirmware/IntelBluetoothFirmware.kext "$efi"/Kexts/IntelBluetoothFirmware.kext
+        mv "$dir"/temp/IntelBluetoothFirmware/IntelBTPatcher.kext "$efi"/Kexts/IntelBTPatcher.kext
         case $os_choice in
             2|3|4|5 )
-                mv "$dir"/temp/IntelBluetoothFirmware/IntelBluetoothInjector.kext $efi/Kexts/IntelBluetoothInjector.kext
+                mv "$dir"/temp/IntelBluetoothFirmware/IntelBluetoothInjector.kext "$efi"/Kexts/IntelBluetoothInjector.kext
             ;;
         esac
     ;;
     2 )
-        BRCMPATCHRAM_RELEASE_URL=$(echo "$(curl -s $BRCMPATCHRAM_URL)" | jq -r '.assets | .[] | select(.name | endswith("-RELEASE.zip")) | .browser_download_url')
+        BRCMPATCHRAM_RELEASE_URL=$(curl -s "$BRCMPATCHRAM_URL" | jq -r '.assets | .[] | select(.name | endswith("-RELEASE.zip")) | .browser_download_url')
 
-        if [ -z $BRCMPATCHRAM_RELEASE_URL ]; then
+        if [ -z "$BRCMPATCHRAM_RELEASE_URL" ]; then
             error "BrcmPatchRAM release URL not found, is GitHub rate-limiting you?"
             exit 1
         fi
@@ -658,17 +658,17 @@ bluetooth() {
         info "Downloading BrcmPatchRAM..."
         curl -Ls "$BRCMPATCHRAM_RELEASE_URL" -o "$dir"/temp/BrcmPatchRAM.zip
         unzip -q "$dir"/temp/BrcmPatchRAM.zip -d "$dir"/temp/BrcmPatchRAM
-        mv "$dir"/temp/BrcmPatchRAM/BrcmFirmwareData.kext $efi/Kexts/BrcmFirmwareData.kext
+        mv "$dir"/temp/BrcmPatchRAM/BrcmFirmwareData.kext "$efi"/Kexts/BrcmFirmwareData.kext
         case $os_choice in
             5 )
-                mv $dir/temp/BrcmPatchRAM/BrcmPatchRAM2.kext $efi/Kexts/BrcmPatchRAM2.kext
+                mv "$dir"/temp/BrcmPatchRAM/BrcmPatchRAM2.kext "$efi"/Kexts/BrcmPatchRAM2.kext
             ;;
             2|1 )
-                mv $dir/temp/BrcmPatchRAM/BrcmPatchRAM3.kext $efi/Kexts/BrcmPatchRAM3.kext
+                mv "$dir"/temp/BrcmPatchRAM/BrcmPatchRAM3.kext "$efi"/Kexts/BrcmPatchRAM3.kext
             ;;
             4|3 )
-                mv $dir/temp/BrcmPatchRAM/BrcmPatchRAM3.kext $efi/Kexts/BrcmPatchRAM3.kext
-                mv $dir/temp/BrcmPatchRAM/BrcmBlueteoothInjector.kext $efi/Kexts/BrcmBluetoothInjector.kext
+                mv "$dir"/temp/BrcmPatchRAM/BrcmPatchRAM3.kext "$efi"/Kexts/BrcmPatchRAM3.kext
+                mv "$dir"/temp/BrcmPatchRAM/BrcmBlueteoothInjector.kext "$efi"/Kexts/BrcmBluetoothInjector.kext
             ;;
         esac
     ;;
@@ -692,15 +692,15 @@ nvme_choice() {
     case $nvme_choice in
         y|Y|Yes|yes|YES )
             NVMEFIX_RELEASE_URL=$(curl -s "$NVMEFIX_URL" | jq -r '.assets[] | select(.name | match("NVMeFix-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-            if [ -z $NVMEFIX_RELEASE_URL ]; then
+            if [ -z "$NVMEFIX_RELEASE_URL" ]; then
                 error "NVMeFix release URL not found, is GitHub rate-limiting you?"
                 exit 1
             fi
 
             info "Downloading NVMeFix..."
-            curl -Ls $NVMEFIX_RELEASE_URL -o "$dir"/temp/NVMeFix.zip
+            curl -Ls "$NVMEFIX_RELEASE_URL" -o "$dir"/temp/NVMeFix.zip
             unzip -q "$dir"/temp/NVMeFix.zip -d "$dir"/temp/NVMeFix
-            mv "$dir"/temp/NVMeFix/NVMeFix.kext $efi/Kexts/NVMeFix.kext
+            mv "$dir"/temp/NVMeFix/NVMeFix.kext "$efi"/Kexts/NVMeFix.kext
         ;;
         n|N|No|no|NO )
             echo "" > /dev/null
@@ -750,58 +750,58 @@ laptop_input_screen() {
     case $input_choice in
         1 )
             info "Downloading VoodooRMI..."
-            curl -Ls $VOODOORMI_RELEASE_URL -o $dir/temp/VoodooRMI.zip
-            unzip -q $dir/temp/VoodooRMI.zip -d $dir/temp/VoodooRMI
-            mv $dir/temp/VoodooRMI/Release/VoodooRMI.kext $efi/Kexts/VoodooRMI.kext
+            curl -Ls "$VOODOORMI_RELEASE_URL" -o "$dir"/temp/VoodooRMI.zip
+            unzip -q "$dir"/temp/VoodooRMI.zip -d "$dir"/temp/VoodooRMI
+            mv "$dir"/temp/VoodooRMI/Release/VoodooRMI.kext "$efi"/Kexts/VoodooRMI.kext
         ;;
         2 )
             info "Downloading VoodooSMBus..."
-            curl -Ls $VOODOOSMBUS_RELEASE_URL -o $dir/VoodooSMBus.zip
-            unzip -q $dir/VoodooSMBus.zip -d $dir/VoodooSMBus
-            mv $dir/VoodooSMBus/VoodooSMBus.kext $efi/Kexts/VoodooSMBus.kext
+            curl -Ls "$VOODOOSMBUS_RELEASE_URL" -o "$dir"/VoodooSMBus.zip
+            unzip -q "$dir"/VoodooSMBus.zip -d "$dir"/VoodooSMBus
+            mv "$dir"/VoodooSMBus/VoodooSMBus.kext "$efi"/Kexts/VoodooSMBus.kext
         ;;
         3 )
             info "Downloading VoodooI2CELAN..."
-            curl -Ls $VOODOOI2C_RELEASE_URL $dir/temp/VoodooI2c.zip
-            unzip -q $dir/temp/VoodooI2c.zip -d $dir/temp/VoodooI2C
-            mv $dir/temp/VoodooI2C/VoodooI2C.kext $efi/Kexts/VoodooI2C.kext
-            mv $dir/temp/VoodooI2C/VoodooI2C/VoodooI2CELAN.kext $efi/Kexts/VoodooI2CELAN.kext
+            curl -Ls "$VOODOOI2C_RELEASE_URL" "$dir"/temp/VoodooI2c.zip
+            unzip -q "$dir"/temp/VoodooI2c.zip -d "$dir"/temp/VoodooI2C
+            mv "$dir"/temp/VoodooI2C/VoodooI2C.kext "$efi"/Kexts/VoodooI2C.kext
+            mv "$dir"/temp/VoodooI2C/VoodooI2C/VoodooI2CELAN.kext "$efi"/Kexts/VoodooI2CELAN.kext
         ;;
         4 )
             info "Downloading VoodooI2C, VoodooI2CHID..."
-            curl -Ls $VOODOOI2C_RELEASE_URL -o $dir/temp/VoodooI2C.zip
-            unzip -q $dir/temp/VoodooI2C.zip -d $dir/temp/VoodooI2C
-            mv $dir/temp/VoodooI2C/VoodooI2C.kext $efi/Kexts/VoodooI2C.kext
-            mv $dir/temp/VoodooI2C/VoodooI2CHID.kext $efi/Kexts/VoodooI2CHID.kext
+            curl -Ls "$VOODOOI2C_RELEASE_URL" -o "$dir"/temp/VoodooI2C.zip
+            unzip -q "$dir"/temp/VoodooI2C.zip -d "$dir"/temp/VoodooI2C
+            mv "$dir"/temp/VoodooI2C/VoodooI2C.kext "$efi"/Kexts/VoodooI2C.kext
+            mv "$dir"/temp/VoodooI2C/VoodooI2CHID.kext "$efi"/Kexts/VoodooI2CHID.kext
         ;;
         5 )
             info "Downloading VoodooI2C, VoodooI2CFTE..."
-            curl -Ls $VOODOOI2C_RELEASE_URL -o $dir/temp/VoodooI2C.zip
-            unzip -q $dir/temp/VoodooI2C.zip -d $dir/temp/VoodooI2C
-            mv $dir/temp/VoodooI2C/VoodooI2C.kext $efi/Kexts/VoodooI2C.kext
-            mv $dir/temp/VoodooI2C/VooodooI2CFTE.kext $efi/VooodooI2CFTE.kext
+            curl -Ls "$VOODOOI2C_RELEASE_URL" -o "$dir"/temp/VoodooI2C.zip
+            unzip -q "$dir"/temp/VoodooI2C.zip -d "$dir"/temp/VoodooI2C
+            mv "$dir"/temp/VoodooI2C/VoodooI2C.kext "$efi"/Kexts/VoodooI2C.kext
+            mv "$dir"/temp/VoodooI2C/VooodooI2CFTE.kext "$efi"/VooodooI2CFTE.kext
         ;;
         6 )
             info "Downloading VoodooI2C, VoodooI2CAtmelMXT"
-            curl -Ls $VOODOOI2C_RELEASE_URL -o $dir/temp/VoodooI2C.zip
-            unzip -q $dir/temp/VoodooI2C.zip -d $dir/temp/VoodooI2C
-            mv $dir/temp/VodoooI2C/VoodooI2C.kext $efi/Kexts/VoodooI2C.kext
-            mv $dir/temp/VoodooI2C/VoodooI2CAtmelMXT.kext $efi/Kexts/VoodooI2CAtmelMXT.kext
+            curl -Ls "$VOODOOI2C_RELEASE_URL" -o "$dir"/temp/VoodooI2C.zip
+            unzip -q "$dir"/temp/VoodooI2C.zip -d "$dir"/temp/VoodooI2C
+            mv "$dir"/temp/VodoooI2C/VoodooI2C.kext "$efi"/Kexts/VoodooI2C.kext
+            mv "$dir"/temp/VoodooI2C/VoodooI2CAtmelMXT.kext "$efi"/Kexts/VoodooI2CAtmelMXT.kext
         ;;
         7 )
             info "Downloading VoodoI2C, VoodooRMI..."
-            curl -Ls $VOODOOI2C_RELEASE_URL -o $dir/temp/VoodooI2C.zip
-            curl -Ls $VOODOORMI_RELEASE_URL -o $dir/temp/VoodooRMI.zip
-            unzip -q $dir/temp/VoodooI2c.zip -d $dir/temp/VoodooI2C
-            unzip -q $dir/temp/VoodooRMI.zip -d $dir/temp/VoodooRMI
-            mv $dir/temp/VoodooI2C/VoodooI2C.kext $efi/Kexts/VoodooI2C.kext
-            mv $dir/temp/VoodooRMI/VoodooRMI.kext $efi/Kexts/VoodooRMI.kext
+            curl -Ls "$VOODOOI2C_RELEASE_URL" -o "$dir"/temp/VoodooI2C.zip
+            curl -Ls "$VOODOORMI_RELEASE_URL" -o "$dir"/temp/VoodooRMI.zip
+            unzip -q "$dir"/temp/VoodooI2c.zip -d "$dir"/temp/VoodooI2C
+            unzip -q "$dir"/temp/VoodooRMI.zip -d "$dir"/temp/VoodooRMI
+            mv "$dir"/temp/VoodooI2C/VoodooI2C.kext "$efi"/Kexts/VoodooI2C.kext
+            mv "$dir"/temp/VoodooRMI/VoodooRMI.kext "$efi"/Kexts/VoodooRMI.kext
         ;;
         8 )
             info "Downloading AlpsHID..."
-            curl -Ls $ALPS_HID_RELEASE_URL -o $dir/temp/AlpsHID.zip
-            unzip -q $dir/temp/AlpsHID.zip -d $dir/temp/AlpsHID
-            mv $dir/temp/AlpsHID/AlpsHID.kext $efi/Kexts/AlpsHID.kext
+            curl -Ls "$ALPS_HID_RELEASE_URL" -o "$dir"/temp/AlpsHID.zip
+            unzip -q "$dir"/temp/AlpsHID.zip -d "$dir"/temp/AlpsHID
+            mv "$dir"/temp/AlpsHID/AlpsHID.kext "$efi"/Kexts/AlpsHID.kext
         ;;
         * )
             error "Invalid Choice."
@@ -811,9 +811,9 @@ laptop_input_screen() {
 }
 
 info "Downloading VoodooPS2 for PS/2 laptop keyboard..."
-curl -Ls $VOODOOPS2_RELEASE_URL -o $dir/temp/VoodooPS2Controller.zip
-unzip -q $dir/temp/VoodooPS2Controller.zip -d $dir/temp/VoodooPS2Controller
-mv $dir/temp/VoodooPS2Controller/VoodooPS2Controller.kext $efi/Kexts/VoodooPS2Controller.kext
+curl -Ls "$VOODOOPS2_RELEASE_URL" -o "$dir"/temp/VoodooPS2Controller.zip
+unzip -q "$dir"/temp/VoodooPS2Controller.zip -d "$dir"/temp/VoodooPS2Controller
+mv "$dir"/temp/VoodooPS2Controller/VoodooPS2Controller.kext "$efi"/Kexts/VoodooPS2Controller.kext
 
 
 case $pc_choice in
@@ -921,51 +921,51 @@ case $pc_choice in
         case $acpidesktop_choice in
             1 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml -o $efi/ACPI/SSDT-EC-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-DESKTOP.aml
             ;;
             2 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             3 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o $efi/ACPI/SSDT-AWAC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-PMC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml -o $efi/ACPI/SSDT-PMC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml -o "$efi"/ACPI/SSDT-PMC.aml
             ;;
             4 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o $efi/ACPI/SSDT-AWAC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
                 case $asus_mb_choice in
                     y|Y|Yes|YES|yes )
                         info "Downloading SSDT-RHUB..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o $efi/ACPI/SSDT-RHUB.aml
+                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o "$efi"/ACPI/SSDT-RHUB.aml
                     ;;
                 esac
             ;;
             5 )
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             6 )
                 info "Dowloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 case $am5_mb_choice in
                     y|Y|YES|Yes|yes )
                         info "Downloading SSDT-CPUR..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o "$efi"/ACPI/SSDT-CPUR.aml
                 esac
             ;;
             * )
@@ -978,67 +978,67 @@ case $pc_choice in
         case $acpilaptop_choice in
             1 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml -o $efi/ACPI/SSDT-EC-LAPTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-LAPTOP.aml
                 info "Downloading SSDT-PLNF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             2 )
                 info "Downloading SSDT-PLUG_DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o $efi/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             3 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o $efi/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o $efi/ACPI/SSDT-AWAC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             4 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o $efi/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o $efi/ACPI/SSDT-AWAC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
                 case $laptopgen_choice in
                     1 )
                         info "Downloading SSDT-PMC..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml -o $efi/ACPI/SSDT-PMC.aml
+                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml -o "$efi"/ACPI/SSDT-PMC.aml
                     ;;
                 esac
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             5 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o $efi/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o $efi/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o $efi/ACPI/SSDT-AWAC.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-RHUB..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o $efi/ACPI/SSDT-RHUB.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o "$efi"/ACPI/SSDT-RHUB.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o $efi/ACPI/SSDT-PNLF.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o $efi/ACPI/SSDT-XOSI.aml
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             * )
                 error "Invalid Choice"
@@ -1048,12 +1048,12 @@ case $pc_choice in
     ;;
 esac
 
-git clone -q https://github.com/corpnewt/OCSnapshot.git $dir/OCSnapshot
+git clone -q https://github.com/corpnewt/OCSnapshot.git "$dir"/OCSnapshot
 info "Adding Driver entries into config.plist..."
 info "Adding ACPI entries into config.plist..."
 info "Adding Tool entries into config.plist..."
 info "Adding Kext entries into config.plist..."
-python3 $dir/OCSnapshot/OCSnapshot.py -i $efi/config.plist -s $dir/EFI/EFI/OC -c &> /dev/null
+python3 "$dir"/OCSnapshot/OCSnapshot.py -i "$efi"/config.plist -s "$dir"/EFI/EFI/OC -c &> /dev/null
 
 
 change_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.prev-lang:kbd string
@@ -1205,21 +1205,21 @@ ice_lake_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -1296,7 +1296,7 @@ coffelakeplus_cometlake_laptop_config_setup() {
         esac
     }
     aapl
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     warning "If your GPU is a UHD630 and your device-id of it in Windows is anything else than 0x3E9B, you need to create an entry under DeviceProperties:PciRoot(0x0)/Pci(0x2,0x0)
  named device-id as data, with the value: 9B3E0000"
     sleep 5
@@ -1444,21 +1444,21 @@ coffelakeplus_cometlake_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -1534,7 +1534,7 @@ coffee_whiskeylake_laptop_config_setup() {
         esac
     }
     aapl_plat_id
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     warning "If your GPU is a UHD630 and your device-id of it in windows is anything else than 0x3E9B, you need to create an entry under DeviceProperties:PciRoot(0x0)/Pci(0x2,0x0)
  named device-id as data, with the value: 9B3E0000"
     uhd620() {
@@ -1680,21 +1680,21 @@ coffee_whiskeylake_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -1774,7 +1774,7 @@ kabylake_laptop_config_setup() {
         esac
         }
     aapl_plat_id
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     uhd620() {
         echo "################################################################"
         echo "Is your GPU a UHD 620?"
@@ -1916,21 +1916,21 @@ kabylake_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -2056,7 +2056,7 @@ skylake_laptop_config_setup() {
             aapl_plat_id
         ;;
         esac
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
 
     dmvt() {
     echo "################################################################"
@@ -2223,21 +2223,21 @@ skylake_laptop_config_setup() {
 
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -2283,7 +2283,7 @@ broadwell_laptop_config_setup() {
         esac
     }
     aapl_plat_id
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     hd5600() {
         echo "################################################################"
         echo "Do you have a hd5600?"
@@ -2442,21 +2442,21 @@ broadwell_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -2508,7 +2508,7 @@ haswell_laptop_config_setup() {
         esac
     }
     aapl_plat_id
-    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     hd4xxx() {
         echo "################################################################"
         echo "Do you have a HD4200, HD4400 or HD4600?"
@@ -2676,21 +2676,21 @@ haswell_laptop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -2741,8 +2741,8 @@ haswell_broadwell_desktop_config_setup() {
         esac
     }
     aapl_plat_id
-    echo "$plat_id" | xxd -r -p - > $dir/temp/aapl_id.bin
-    import_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" $dir/temp/aapl_id.bin
+    echo "$plat_id" | xxd -r -p - > "$dir"/temp/aapl_id.bin
+    import_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" "$dir"/temp/aapl_id.bin
     hd4400() {
         echo "################################################################"
         echo "Do you have a HD4400?"
@@ -2751,8 +2751,8 @@ haswell_broadwell_desktop_config_setup() {
         case $hd4400_choice in
             y|Y|YES|Yes|yes )   
                 add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data
-                echo "12040000" | xxd -r -p - > $dir/temp/deviceid.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" $dir/temp/deviceid.bin
+                echo "12040000" | xxd -r -p - > "$dir"/temp/deviceid.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" "$dir"/temp/deviceid.bin
             ;;
             n|N|NO|No|no )
                 echo "" > /dev/null
@@ -2774,15 +2774,15 @@ haswell_broadwell_desktop_config_setup() {
                 echo "" > /dev/null
             ;;
             n|N|NO|No|no )
-                echo "01000000" | xxd -r -p - > $dir/temp/framebuffer_patch_enable.bin
-                echo "00003001" | xxd -r -p - > $dir/temp/framebuffer_stolenmem.bin 
-                echo "00009000" | xxd -r -p - > $dir/temp/framebuffer_fbmem
+                echo "01000000" | xxd -r -p - > "$dir"/temp/framebuffer_patch_enable.bin
+                echo "00003001" | xxd -r -p - > "$dir"/temp/framebuffer_stolenmem.bin 
+                echo "00009000" | xxd -r -p - > "$dir"/temp/framebuffer_fbmem
                 add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data
                 add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" data
                 add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" data
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" $dir/temp/framebuffer-patch-enable.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" $dir/temp/framebuffer-stolenmem.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" $dir/temp/framebuffer-fbmem.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" "$dir"/temp/framebuffer-patch-enable.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" "$dir"/temp/framebuffer-stolenmem.bin
+                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" "$dir"/temp/framebuffer-fbmem.bin
             ;;
             * )
                 error "Invalid Choice"
@@ -2896,21 +2896,21 @@ haswell_broadwell_desktop_config_setup() {
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -3031,21 +3031,21 @@ kabylake_desktop_config_setup(){
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -3169,21 +3169,21 @@ coffeelake_desktop_config_setup(){
     smbiosname=iMac19,1
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -3315,21 +3315,21 @@ cometlake_desktop_config_setup(){
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -3415,21 +3415,21 @@ amd1516_desktop_config_setup(){
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
@@ -3565,21 +3565,21 @@ amd1719_desktop_config_setup(){
     platforminfo
     case $os in
         Linux )
-            chmod +x $dir/Utilities/macserial/macserial.linux
-            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
         ;;
         Darwin )
-            chmod +x $dir/Utilities/macserial/macserial
-            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
         ;;
     esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string $smbiosname
-    set_plist PlatformInfo.Generic.SystemSerialNumber string $SN
-    set_plist PlatformInfo.Generic.MLB string $MLB
-    set_plist PlatformInfo.Generic.SystemUUID string $UUID
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
