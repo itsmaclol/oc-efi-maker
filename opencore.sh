@@ -960,12 +960,13 @@ case $pc_choice in
                 curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             6 )
-              info "Dowloading SSDT-EC-USBX-DESKTOP..."
-              curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
-              case $am5desktop_choice in
-                   y|Y|YES|Yes|yes )
-                       info "Downloading SSDT-CPUR..."
-                       curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+                info "Dowloading SSDT-EC-USBX-DESKTOP..."
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                case $am5desktop_choice in
+                    y|Y|YES|Yes|yes )
+                        info "Downloading SSDT-CPUR..."
+                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+                esac
             ;;
             * )
                 error "Invalid Choice"
