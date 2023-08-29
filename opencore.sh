@@ -25,9 +25,9 @@ warning() {
 }
 clear
 internet_check() {
-    cmd=$(ping -c 1 -W 1 google.com > /dev/null 2>&1)
+    ping -c 1 -W 1 google.com > /dev/null 2>&1
 
-    if [ "$cmd" -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         echo "" > /dev/null
     else
         error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
