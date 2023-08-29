@@ -189,6 +189,8 @@ BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases
 NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
 VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
 WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releases/latest"
+#VIRTUALSMC_AMD_URL="url here"
+#VIRTUALSMC_AMD2_URL="url here"
 
 info "Downloading plisteditor.py..."
 curl -Ls https://cdn.itsmac.eu.org/plisteditor.py -o $dir/temp/plisteditor.py
@@ -817,8 +819,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    # echo "5. Bulldozer(15h) and Jaguar(16h)"
-    # echo "6. Ryzen and Threadripper(17h and 19h)"
+    echo "5. Bulldozer(15h) and Jaguar(16h)"
+    echo "6. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -870,11 +872,25 @@ esac
 #                echo "We'll need to ask you this question for gathering ACPI files."
 #                echo "Do you have a B550 or A520 series motherboard?"
 #                echo "################################################################"
-#                read -r -p "y/n: " amd_500_choice
+#                read -r -p "y/n: " am5desktop_choice
 #             ;;
 #         esac
 #     ;;
 # esac
+
+case $pc_choice in
+    3 )
+       case $acpidesktop_choice in
+           4 )
+                echo "################################################################"
+                echo "We'll need to ask you this question for gathering ACPI files."
+                echo "Do you have an AM5 series motherboard? (B550/A520)"
+                echo "################################################################"
+                read -r -p "y/n: " am5_mb_choice
+            ;;
+        esac
+    ;;
+esac
 
 case $pc_choice in 
     1 )
@@ -915,19 +931,18 @@ case $pc_choice in
                     ;;
                 esac
             ;;
-            # 5 )
-            #    info "Downloading SSDT-EC-USBX-DESKTOP..."
-            #    curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            # ;;
-            # 6 )
-            #    info "Downloading SSDT-EC-USBX-DESKTOP..."
-            #    curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            #    case $am5desktop_choice in
-            #         y|Y|Yes|YES|yes )
-            #             info "Downloading SSDT-CPUR..."
-            #             curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
-            #            ;;
-            #     esac
+            5 )
+                info "Downloading SSDT-EC-USBX-DESKTOP..."
+                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            ;;
+            6 )
+              info "Dowloading SSDT-EC-USBX-DESKTOP..."
+              curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o $efi/ACPI/SSDT-EC-USBX-DESKTOP.aml
+              case $am5desktop_choice in
+                   y|Y|YES|Yes|yes )
+                       info "Downloading SSDT-CPUR..."
+                       curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o $efi/ACPI/SSDT-CPUR.aml
+            ;;
             * )
                 error "Invalid Choice"
                 acpi_desktop
@@ -1186,8 +1201,8 @@ ice_lake_laptop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20200306
         ;;
         5 )
-            set_plist UEFI:APFS.MinVersion number 945275007000000
-            set_plist UEFI:APFS.MinDate number 20190820
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
     set_plist UEFI.Quirks.ReleaseUsbOwnership bool True
@@ -1257,7 +1272,7 @@ coffelakeplus_cometlake_laptop_config_setup() {
     }
     aapl
     set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data $plat_id
-    warning "If your GPU is a UHD630 and your device-id of it in windows is anything else than 0x3E9B, you need to create an entry under DeviceProperties:PciRoot(0x0)/Pci(0x2,0x0)
+    warning "If your GPU is a UHD630 and your device-id of it in Windows is anything else than 0x3E9B, you need to create an entry under DeviceProperties:PciRoot(0x0)/Pci(0x2,0x0)
  named device-id as data, with the value: 9B3E0000"
     sleep 5
     uhd620() {
@@ -1425,8 +1440,8 @@ coffelakeplus_cometlake_laptop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20200306
         ;;
         5 )
-            set_plist UEFI:APFS.MinVersion number 945275007000000
-            set_plist UEFI:APFS.MinDate number 20190820
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
     set_plist UEFI.Quirks.ReleaseUsbOwnership bool True
@@ -1742,8 +1757,8 @@ kabylake_laptop_config_setup() {
         read -r -p "y/n: " uhd620_choice
         case $uhd620_choice in
             y|Y|yes|YES|Yes )
-                add_plist ":DeviceProperties.Add:PciRoot(0x0)/Pci(0x2,0x0).device-id" data
-                set_plist ":DeviceProperties.Add:PciRoot(0x0)/Pci(0x2,0x0).device-id" data 16590000
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data 16590000
             ;;
             n|N|NO|No|no )
                 echo "" >> /dev/null
@@ -1911,8 +1926,6 @@ kabylake_laptop_config_setup() {
     info "Your EFI is located at $dir/EFI"
 }
 
-
-
 skylake_laptop_config_setup() {
     info "Configuring config.plist for Skylake Laptop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
@@ -2027,12 +2040,12 @@ skylake_laptop_config_setup() {
     read -r -p "y/n: " dvmt_prealloc
     case $dvmt_prealloc in
         n|N|NO|No|no )
-            add_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
-            add_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
-            add_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
-            set_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
-            set_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
-            set_plist "DeviceProperties:Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
         ;;
         y|Y|YES|Yes|yes )
             echo "" > /dev/null
@@ -2148,7 +2161,7 @@ skylake_laptop_config_setup() {
 
     platforminfo_setup_ventura() {
         echo "################################################################"
-        echo "Now, we need to pick a kaby lake SMBIOS, even tho this is a skylake machine."
+        echo "Now, we need to pick a Kaby Lake SMBIOS, even though this is a Skylake machine."
         echo "Pick the closest one to your hardware."
         echo "1. MacBookPro14,1	- CPU: Dual Core 15W(Low End) - GPU: Iris Plus 640 13inch"
         echo "2. MacBookPro14,2	- CPU: Dual Core 15W(High End) - GPU: Iris Plus 650 13 inch"
@@ -2253,8 +2266,8 @@ broadwell_laptop_config_setup() {
         read -r -p "y/n: " hd5600_choice
         case $hd5600_choice in
             y|Y|YES|Yes|yes )
-                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data
-                set_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data 26160000
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data 26160000
             ;;
             n|N|NO|No|no )
                 echo "" > /dev/null
@@ -2272,12 +2285,12 @@ broadwell_laptop_config_setup() {
     read -r -p "y/n: " dvmt_prealloc
     case $dvmt_prealloc in
         n|N|NO|No|no )
-            add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data
-            add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" data
-            add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" data
-            set_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data 01000000
-            set_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" data 00003001
-            set_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" data 00009000
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+            add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
+            set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
         ;;
         y|Y|YES|Yes|yes )
             echo "" > /dev/null
@@ -2659,12 +2672,12 @@ haswell_laptop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20200306
         ;;
         5 )
-            set_plist UEFI:APFS.MinVersion number 945275007000000
-            set_plist UEFI:APFS.MinDate number 20190820
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
     set_plist UEFI.Quirks.ReleaseUsbOwnership bool True
-    set_plist UEFI:Quirks:IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
     case $hplaptop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -2676,6 +2689,7 @@ haswell_laptop_config_setup() {
 }
 
 haswell_broadwell_desktop_config_setup() {
+    #gumi note: will update device properties to new format later
     aapl_plat_id() {
         echo "################################################################"
         echo "Now, we need to pick a AAPL,ig-platform-id."
@@ -2703,7 +2717,7 @@ haswell_broadwell_desktop_config_setup() {
     }
     aapl_plat_id
     echo "$plat_id" | xxd -r -p - > $dir/temp/aapl_id.bin
-    import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):AAPL,ig-platform-id" $dir/temp/aapl_id.bin
+    import_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" $dir/temp/aapl_id.bin
     hd4400() {
         echo "################################################################"
         echo "Do you have a HD4400?"
@@ -2795,7 +2809,7 @@ haswell_broadwell_desktop_config_setup() {
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     case $os_choice in
         4|5 ) 
-             set_plist Kernel:Quirks:XhciPortLimit False
+             set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
     set_plist Misc.Debug.AppleDebug bool True
@@ -2855,7 +2869,16 @@ haswell_broadwell_desktop_config_setup() {
         esac
     }
     platforminfo
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
@@ -2869,11 +2892,11 @@ haswell_broadwell_desktop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20200306
         ;;
         5 )
-            set_plist UEFI:APFS.MinVersion number 945275007000000
-            set_plist UEFI:APFS.MinDate number 20190820
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI:Quirks:IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -2941,11 +2964,11 @@ kabylake_desktop_config_setup(){
             esac
     }
     hpdesktop
-    set_plist set_plist Kernel.Quirks.PanicNoKextDump bool True
-    set_plist set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     case $os_choice in
         4|5 ) 
-             set_plist Kernel:Quirks:XhciPortLimit False
+             set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
     set_plist Misc.Debug.AppleDebug bool True
@@ -2981,7 +3004,16 @@ kabylake_desktop_config_setup(){
         esac
     }
     platforminfo
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
@@ -2995,11 +3027,11 @@ kabylake_desktop_config_setup(){
             set_plist UEFI.APFS.MinDate number 20200306
         ;;
         5 )
-            set_plist UEFI:APFS.MinVersion number 945275007000000
-            set_plist UEFI:APFS.MinDate number 20190820
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI:Quirks:IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -3017,7 +3049,24 @@ coffeelake_desktop_config_setup(){
     set_plist Booter.Quirks.ProtectUefiServices bool True
     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
     set_plist Booter.Quirks.ResizeAppleGpuBars number -1
-    #add resize gpu here
+    resizegpu(){
+        echo "################################################################"
+        echo "Does your GPU support Resizeable BAR?"
+        echo "################################################################"
+        read -r -p "y/n: " resizegpu_choice
+        case $resizegpu_choice in
+            Y|y|YES|Yes|yes )
+                set_plist Booter.Quirks.ResizeAppleGpuBars number 1
+            ;;
+            n|N|NO|No|no )
+                set_plist Booter.Quirks.ResizeAppleGpuBars number -1
+            ;;
+            * )
+                error "Invalid Choice"
+                resizegpu
+            esac
+    }
+    resizegpu
     set_plist Booter.Quirks.SyncRunetimePermissions bool True
     # device properties here 
         cfg(){
@@ -3078,7 +3127,7 @@ coffeelake_desktop_config_setup(){
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     case $os_choice in
         4|5 ) 
-             set_plist Kernel:Quirks:XhciPortLimit False
+             set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
     set_plist Misc.Debug.AppleDebug bool True
@@ -3093,7 +3142,16 @@ coffeelake_desktop_config_setup(){
     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
     # gpu args go here
     smbiosname=iMac19,1
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
@@ -3133,7 +3191,7 @@ cometlake_desktop_config_setup(){
     #device properties here 
     #case $os_choice in
         #4 )
-           #import_plist Kernel:Patch: #i dont know how to add a new dictionary >.<
+           #import_plist Kernel.Patch. #i dont know how to add a new dictionary >.<
         #;;
     #esac
     cfg(){
@@ -3230,7 +3288,16 @@ cometlake_desktop_config_setup(){
         esac
     }
     platforminfo
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
@@ -3263,7 +3330,7 @@ cometlake_desktop_config_setup(){
 
 amd1516_desktop_config_setup(){
     set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patches go here
+    # kernel patch start
     set_plist Kernel.Quirks.PanicNoKextDump bool True
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
@@ -3321,7 +3388,16 @@ amd1516_desktop_config_setup(){
         esac
     }
     platforminfo
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
@@ -3404,8 +3480,7 @@ amd1719_desktop_config_setup(){
     set_plist Booter.Quirks.SetupVirtualMap bool True
     set_plist Booter.Quirks.SyncRuntimePermissions bool True
     set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patch START!
-    
+    # kernel patch start
     set_plist Kernel.Quirks.PanicNoKextDump bool True
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
@@ -3463,7 +3538,16 @@ amd1719_desktop_config_setup(){
         esac
     }
     platforminfo
-    smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+    case $os in
+        Linux )
+            chmod +x $dir/Utilities/macserial/macserial.linux
+            smbiosoutput=$($dir/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x $dir/Utilities/macserial/macserial
+            smbiosoutput=$($dir/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
     UUID=$(uuidgen)
