@@ -166,7 +166,6 @@ Options:
     --ignore-internet-check      Ignores the internet check at the beginning of the script. Use this if you are 100% sure that you have internet.
     --ignore-dependencies        Ignores the dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed.
     --ignore-deps-internet-check Ignores both the internet and dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed and have internet.
-    --remove-all-temp-folders    Removes all the temporary folders 
 
 Warning: This script is made for an elementary opencore EFI, if you want a stable hackintosh please follow the guide over at https://dortania.github.io/OpenCore-Install-Guide/
 EOF
@@ -185,10 +184,6 @@ case $1 in
     ;;
     "-h"|"--help" )
         help_page
-    ;;
-    "--remove-all-temp-folders" )
-        rm -rf "$dir"
-        exit 1
     ;;
     * )
         internet_check
