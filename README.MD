@@ -22,9 +22,9 @@ This project was made for fun, and the EFI's that this script generates are only
 ## Credits
 Apple for macOS
 
-Dortania for the Dortania Opencore guide
+Dortania for the OpenCore guide
 
-acidanthera for Opencore, whatevergreen, applealc, intelmausi etc...
+acidanthera for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
 
 & more...
 
