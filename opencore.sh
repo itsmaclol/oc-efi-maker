@@ -850,8 +850,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    echo "5. Bulldozer(15h) and Jaguar(16h)"
-    echo "6. Ryzen and Threadripper(17h and 19h)"
+    : 'echo "5. Bulldozer(15h) and Jaguar(16h)"
+    echo "6. Ryzen and Threadripper(17h and 19h)"'
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -897,31 +897,19 @@ case $pc_choice in
         esac
 esac
 
-# case $pc_choice in
-#      3 )
+#case $pc_choice in
+#    3 )
+#       case $acpidesktop_choice in
+#           6 )
 #                echo "################################################################"
 #                echo "We'll need to ask you this question for gathering ACPI files."
-#                echo "Do you have a B550 or A520 series motherboard?"
+#                echo "Do you have an AM5 series motherboard? (B550/A520)"
 #                echo "################################################################"
-#                read -r -p "y/n: " am5desktop_choice
-#             ;;
-#         esac
-#     ;;
-# esac
-
-case $pc_choice in
-    3 )
-       case $acpidesktop_choice in
-           4 )
-                echo "################################################################"
-                echo "We'll need to ask you this question for gathering ACPI files."
-                echo "Do you have an AM5 series motherboard? (B550/A520)"
-                echo "################################################################"
-                read -r -p "y/n: " am5_mb_choice
-            ;;
-        esac
-    ;;
-esac
+#                read -r -p "y/n: " am5_desktop_choice
+#            ;;
+#        esac
+#    ;;
+#esac
 
 
 case $pc_choice in 
@@ -963,19 +951,19 @@ case $pc_choice in
                     ;;
                 esac
             ;;
-            5 )
+            : '5 )
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls $SSDT_EC_USBX_DESKTOP -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             6 )
                 info "Dowloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                case $am5_mb_choice in
+                case $am5_desktop_choice in
                     y|Y|YES|Yes|yes )
                         info "Downloading SSDT-CPUR..."
                         curl -Ls "$SSDT_CPUR" -o "$efi"/ACPI/SSDT-CPUR.aml
                 esac
-            ;;
+            ;;'
             * )
                 error "Invalid Choice"
                 acpi_desktop
@@ -3371,7 +3359,7 @@ cometlake_desktop_config_setup(){
     #gumi note: mayb add smth pertaining to 2020+ bios regarding Above4G
 }
 
-amd1516_desktop_config_setup(){
+: 'amd1516_desktop_config_setup(){
     set_plist Kernel.Emulate.DummyPowerManagement bool True
     # kernel patch start
     set_plist Kernel.Quirks.PanicNoKextDump bool True
@@ -3480,9 +3468,9 @@ amd1516_desktop_config_setup(){
     info "Your EFI is located at $dir/EFI"
     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-}
+}'
 
-amd1719_desktop_config_setup(){
+: 'amd1719_desktop_config_setup(){
     trx40(){
         echo "################################################################"
         echo "Do you have a TRx40 system?"
@@ -3630,7 +3618,7 @@ amd1719_desktop_config_setup(){
     info "Your EFI is located at $dir/EFI"
     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-}
+}'
 
 cpu_rev_laptop() {
     echo "################################################################"
@@ -3682,8 +3670,8 @@ cpu_rev_desktop() {
     echo "4. Kaby Lake"
     echo "5. Coffee Lake"
     echo "6. Comet Lake"
-    # echo "7. Bulldozer(15h) and Jaguar (16h)"
-    # echo "8. Ryzen and Threadripper(17h and 19h)"
+    : 'echo "7. Bulldozer(15h) and Jaguar (16h)"
+     echo "8. Ryzen and Threadripper(17h and 19h)"'
     echo "################################################################"
     read -r -p "Pick a number 1-6: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
