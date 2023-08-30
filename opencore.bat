@@ -1,5 +1,4 @@
 @echo off
-REM a new beginning
 REM colors here
 temp_dir=$(mktemp -d)
 title OpenCore EFI Maker Made with love by Neco Arc (gumi) and Mac <3
