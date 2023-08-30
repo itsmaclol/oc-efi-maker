@@ -213,11 +213,23 @@ BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases
 NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
 VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
 WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releases/latest"
+SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
+SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
+SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
+SSDT_AWAC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml"
+SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml"
+SSDT_RHUB="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml"
+SSDT_CPUR="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml"
+SSDT_EC_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml"
+SSDT_PNLF="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml"
+SSDT_XOSI="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml"
+SSDT_EC_USBX_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml"
+SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml"
 #VIRTUALSMC_AMD_URL="url here"
 #VIRTUALSMC_AMD2_URL="url here"
 
 info "Downloading plisteditor.py..."
-curl -Ls https://cdn.itsmac.eu.org/plisteditor.py -o "$dir"/temp/plisteditor.py
+curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
     python3 "$dir"/temp/plisteditor.py add  "$1" --type "$2" --path "$efi"/config.plist
 }
@@ -916,56 +928,57 @@ case $pc_choice in
     ;;
 esac
 
+
 case $pc_choice in 
     1 )
         case $acpidesktop_choice in
             1 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-DESKTOP.aml
+                curl -Ls "$SSDT_EC_DESKTOP" -o "$efi"/ACPI/SSDT-EC-DESKTOP.aml
             ;;
             2 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             3 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
+                curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-PMC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml -o "$efi"/ACPI/SSDT-PMC.aml
+                curl -Ls "$SSDT_PMC" -o "$efi"/ACPI/SSDT-PMC.aml
             ;;
             4 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
+                curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
                 case $asus_mb_choice in
                     y|Y|Yes|YES|yes )
                         info "Downloading SSDT-RHUB..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o "$efi"/ACPI/SSDT-RHUB.aml
+                        curl -Ls "$SSDT_RHUB" -o "$efi"/ACPI/SSDT-RHUB.aml
                     ;;
                 esac
             ;;
             5 )
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls $SSDT_EC_USBX_DESKTOP -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             6 )
                 info "Dowloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 case $am5_mb_choice in
                     y|Y|YES|Yes|yes )
                         info "Downloading SSDT-CPUR..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml -o "$efi"/ACPI/SSDT-CPUR.aml
+                        curl -Ls "$SSDT_CPUR" -o "$efi"/ACPI/SSDT-CPUR.aml
                 esac
             ;;
             * )
@@ -978,67 +991,73 @@ case $pc_choice in
         case $acpilaptop_choice in
             1 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-LAPTOP.aml
+                curl -Ls "$SSDT_EC_LAPTOP" -o "$efi"/ACPI/SSDT-EC-LAPTOP.aml
                 info "Downloading SSDT-PLNF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
+                curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
+                curl -Ls "$SSDT_XOSI" -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             2 )
                 info "Downloading SSDT-PLUG_DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls "$SSDT_EC_USBX_LAPTOP" -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
+                curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
+                curl -Ls "$SSDT_XOSI" -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             3 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls "$SSDT_EC_USBX_LAPTOP" -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
+                curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
+                curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
+                curl -Ls "$SSDT_XOSI" -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             4 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls "$SSDT_EC_USBX_LAPTOP" -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
+                curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
                 case $laptopgen_choice in
                     1 )
                         info "Downloading SSDT-PMC..."
-                        curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml -o "$efi"/ACPI/SSDT-PMC.aml
+                        curl -Ls "$SSDT_PMC" -o "$efi"/ACPI/SSDT-PMC.aml
                     ;;
+                    2 )
+                        echo "" > /dev/null
+                    ;;
+                    * )
+                        error "Invalid Choice"
+
                 esac
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
+                curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
+                curl -Ls "$SSDT_XOSI" -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             5 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
                 info "Downloading SSDT-EC-USBX-LAPTOP..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
+                curl -Ls "$SSDT_EC_USBX_LAPTOP" -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml -o "$efi"/ACPI/SSDT-AWAC.aml
+                curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
                 info "Downloading SSDT-RHUB..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml -o "$efi"/ACPI/SSDT-RHUB.aml
+                curl -Ls "$SSDT_RHUB" -o "$efi"/ACPI/SSDT-RHUB.aml
                 info "Downloading SSDT-PNLF..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml -o "$efi"/ACPI/SSDT-PNLF.aml
+                curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
-                curl -Ls https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml -o "$efi"/ACPI/SSDT-XOSI.aml
+                curl -Ls "$SSDT_XOSI" -o "$efi"/ACPI/SSDT-XOSI.aml
             ;;
             * )
                 error "Invalid Choice"
@@ -1058,7 +1077,11 @@ python3 "$dir"/OCSnapshot/OCSnapshot.py -i "$efi"/config.plist -s "$dir"/EFI/EFI
 
 change_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.prev-lang:kbd string
 set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.prev-lang:kbd string "en-US:0"
-
+delete_plist "#WARNING - 1"
+delete_plist "#WARNING - 2"
+delete_plist "#WARNING - 3"
+delete_plist "#WARNING - 4"
+delete_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x1b,0x0)"
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -1326,15 +1349,15 @@ coffelakeplus_cometlake_laptop_config_setup() {
         read -r -p "y/n: " dvmt_prealloc
         case $dvmt_prealloc in 
             y|Y|Yes|yes|YES )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
                 set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
-            ;;
-            n|N|NO|No|no )
-                echo "" >> /dev/null
             ;;
             * )
                 error "Invalid Choice"
