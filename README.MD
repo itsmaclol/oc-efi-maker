@@ -2,10 +2,18 @@
 oc-efi-maker is a script to generate an OpenCore EFI files, to hackintosh your computer.
 ## Installaton
 Running the script locally:
+### Linux and macOS
+
 ```
 git clone https://github.com/itsmaclol/oc-efi-maker.git && cd oc-efi-maker
 chmod +x ./opencore.sh
 ./opencore.sh
+```
+### Windows
+
+```
+git clone --branch windows https://github.com/itsmaclol/oc-efi-maker.git && cd oc-efi-maker
+opencore.bat
 ```
 ## Flags
 `-h`, `--help` - Prints the help page
