@@ -859,8 +859,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    echo "5. Bulldozer(15h) and Jaguar(16h)"
-    echo "6. Ryzen and Threadripper(17h and 19h)"
+    # echo "5. Bulldozer(15h) and Jaguar(16h)"
+    # echo "6. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -940,13 +940,11 @@ case $pc_choice in
         esac
 esac
 
-#case $pc_choice in
-#    3 )
-#       case $acpidesktop_choice in
-#           6 )
+# case $pc_choice in
+#      3 )
 #                echo "################################################################"
 #                echo "We'll need to ask you this question for gathering ACPI files."
-#                echo "Do you have an AM5 series motherboard? (B550/A520)"
+#                echo "Do you have a B550 or A520 series motherboard?"
 #                echo "################################################################"
 #                read -r -p "y/n: " am5desktop_choice
 #             ;;
@@ -954,15 +952,33 @@ esac
 #     ;;
 # esac
 
+
+am5mb() {
+    echo "################################################################"
+    echo "We'll need to ask you this question for gathering ACPI files."
+    echo "Do you have an AM5 series motherboard? (B550/A520)"
+    echo "################################################################"
+    read -r -p "y/n: " am5_mb_choice
+    case $am5_mb_choice in
+        y|Y|YES|Yes|yes )
+            info "Downloading SSDT-CPUR..."
+            curl -Ls "$SSDT_CPUR" -o "$efi"/ACPI/SSDT-CPUR.aml
+        ;;
+        n|N|NO|No|no )
+            echo "" > /dev/null
+        ;;
+        * )
+            error "Invalid Choice"
+            am5mb
+        ;;
+    esac
+}
+
 case $pc_choice in
     3 )
        case $acpidesktop_choice in
            4 )
-                echo "################################################################"
-                echo "We'll need to ask you this question for gathering ACPI files."
-                echo "Do you have an AM5 series motherboard? (B550/A520)"
-                echo "################################################################"
-                read -r -p "y/n: " am5_mb_choice
+                am5mb
             ;;
         esac
     ;;
@@ -1001,26 +1017,15 @@ case $pc_choice in
                 curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Downloading SSDT-AWAC..."
                 curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
-                case $asus_mb_choice in
-                    y|Y|Yes|YES|yes )
-                        info "Downloading SSDT-RHUB..."
-                        curl -Ls "$SSDT_RHUB" -o "$efi"/ACPI/SSDT-RHUB.aml
-                    ;;
-                esac
             ;;
-            5 )
-                info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls $SSDT_EC_USBX_DESKTOP -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            ;;
-            6 )
-                info "Dowloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                case $am5_mb_choice in
-                    y|Y|YES|Yes|yes )
-                        info "Downloading SSDT-CPUR..."
-                        curl -Ls "$SSDT_CPUR" -o "$efi"/ACPI/SSDT-CPUR.aml
-                esac
-            ;;
+            # 5 )
+            #     info "Downloading SSDT-EC-USBX-DESKTOP..."
+            #     curl -Ls $SSDT_EC_USBX_DESKTOP -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            # ;;
+            # 6 )
+            #     info "Dowloading SSDT-EC-USBX-DESKTOP..."
+            #     curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            #;;
             * )
                 error "Invalid Choice"
                 acpi_desktop
@@ -3629,29 +3634,34 @@ coffeelake_desktop_config_setup(){
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
 }
 
-amd1516_desktop_config_setup(){
-    set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patch start
-    set_plist Kernel.Quirks.PanicNoKextDump bool True
-    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
-    case $os_choice in
-        4|5 ) 
-             set_plist Kernel.Quirks.XhciPortLimit bool False
-        ;;
-    esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target number 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy number 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
-    #gpu args and what not go here
-    platforminfo(){
+cometlake_desktop_config_setup(){
+    info "Configuring config.plist for Comet Lake desktop..."
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
+    set_plist Booter.Quirks.DevirtualizeMmio bool True
+    set_plist Booter.Quirks.EnableWriteUnprotector bool False
+    set_plist Booter.Quirks.ProtectUefiServices bool True
+    set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
+    resizegpu(){
+        echo "################################################################"
+        echo "Does your firmware support Resizeable BAR?"
+        echo "################################################################"
+        read -r -p "y/n: " resizegpu_choice
+        case $resizegpu_choice in
+            Y|y|YES|Yes|yes )
+                set_plist Booter.Quirks.ResizeAppleGpuBars number 0
+            ;;
+            n|N|NO|No|no )
+                set_plist Booter.Quirks.ResizeAppleGpuBars number -1
+            ;;
+            * )
+                error "Invalid Choice"
+                resizegpu
+            esac
+    }
+    resizegpu
+    set_plist Booter.Quirks.SyncRunetimePermissions bool True
+    aapl_plat_id() {
         echo "################################################################"
         echo "Now, we need to pick a AAPL,ig-platform-id."
         echo "Pick the one closest to your hardware."
@@ -3718,15 +3728,8 @@ amd1516_desktop_config_setup(){
                 cfglock
         esac
     }
-    hpdesktop
-    info "Done!"
-    info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
-    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-}
-
-amd1719_desktop_config_setup(){
-    trx40(){
+    cfglock
+    vtd() {
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
         echo "################################################################"
@@ -3837,9 +3840,271 @@ amd1719_desktop_config_setup(){
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
-    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
+    #gumi note: mayb add smth pertaining to 2020+ bios regarding Above4G
 }
+
+# amd1516_desktop_config_setup(){
+#     set_plist Kernel.Emulate.DummyPowerManagement bool True
+#     # kernel patch start
+#     set_plist Kernel.Quirks.PanicNoKextDump bool True
+#     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+#     set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+#     case $os_choice in
+#         4|5 ) 
+#              set_plist Kernel.Quirks.XhciPortLimit bool False
+#         ;;
+#     esac
+#     set_plist Misc.Debug.AppleDebug bool True
+#     set_plist Misc.Debug.ApplePanic bool True
+#     set_plist Misc.Debug.DisableWatchDog bool True
+#     set_plist Misc.Debug.Target number 67
+#     set_plist Misc.Security.AllowSetDefault bool True
+#     set_plist Misc.Security.BlacklistAppleUpdate bool True
+#     set_plist Misc.Security.ScanPolicy number 0
+#     set_plist Misc.Security.SecureBootModel string Default
+#     set_plist Misc.Security.Vault string Optional
+#     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+#     #gpu args and what not go here
+#     platforminfo(){
+#         echo "################################################################"
+#         echo "Now, we need to pick an SMBIOS."
+#         echo "Pick the closest one to your hardware"
+#         echo "1. MacPro7,1 - AMD Polaris and newer"
+#         echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
+#         echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
+#         echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
+#         echo "################################################################"
+#         read -r -p "Choose a number between 1-4: " smbios_choice
+#         case $smbios_choice in
+#             1 )
+#                case $os_choice in
+#                     5 )
+#                          error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
+#                          platforminfo
+#                     ;;
+#                     * )
+#                        smbiosname=MacPro7,1
+#                     ;;
+#                 esac
+#             ;;
+#             2 )
+#                smbiosname=iMacPro1,1
+#             ;;
+#             3 )
+#                smbiosname=iMac14,2
+#             ;;
+#             4 )
+#                smbiosname=MacPro6,1
+#             ;;
+#             * )
+#                error "Invalid Choice"
+#                platforminfo
+#             ;;
+#         esac
+#     }
+#     platforminfo
+#     case $os in
+#         Linux )
+#             chmod +x "$dir"/Utilities/macserial/macserial.linux
+#             smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+#         ;;
+#         Darwin )
+#             chmod +x "$dir"/Utilities/macserial/macserial
+#             smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+#         ;;
+#     esac
+#     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+#     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+#     UUID=$(uuidgen)
+#     set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+#     set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+#     set_plist PlatformInfo.Generic.MLB string "$MLB"
+#     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+#     case $os_choice in
+#         4 )
+#             set_plist UEFI.APFS.MinVersion number 1412101001000000
+#             set_plist UEFI.APFS.MinDate number 20200306
+#         ;;
+#         5 )
+#             set_plist UEFI.APFS.MinVersion number 945275007000000
+#             set_plist UEFI.APFS.MinDate number 20190820
+#         ;;
+#     esac
+#     hpdesktop(){
+#         echo "################################################################"
+#         echo "Do you have a HP System?"
+#         echo "################################################################"
+#         read -r -p "y/n: " hpdesktop_choice
+#         case $hpdesktop_choice in
+#             Y|y|YES|Yes|yes )
+#                 set_plist UEFI.Quirks.UnblockFsConnect bool True
+#             ;;
+#             n|N|NO|No|no )
+#                 echo "" > /dev/null
+#             ;;
+#             * )
+#                 error "Invalid Choice"
+#                 hpdesktop
+#             esac
+#     }
+#     hpdesktop
+#     info "Done!"
+#     info "Your EFI is located at $dir/EFI"
+#     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+#     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
+# }
+
+# amd1719_desktop_config_setup(){
+#     trx40(){
+#         echo "################################################################"
+#         echo "Do you have a TRx40 system?"
+#         echo "################################################################"
+#         read -r -p "y/n: " trx40_choice
+#         case $trx40_choice in
+#             Y|y|YES|Yes|yes )
+#                 echo "" > /dev/null
+#             ;;
+#             n|N|NO|No|no )
+#                 set_plist Booter.Quirks.DevirtualizeMmio bool True
+#             ;;
+#             * )
+#                 error "Invalid Choice"
+#                 trx40
+#             esac
+#     }
+#     trx40
+#     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
+#     resizegpu(){
+#         echo "################################################################"
+#         echo "Does your GPU support Resizeable BAR?"
+#         echo "################################################################"
+#         read -r -p "y/n: " resizegpu_choice
+#         case $resizegpu_choice in
+#             Y|y|YES|Yes|yes )
+#                 set_plist Booter.Quirks.ResizeAppleGpuBars number 1
+#             ;;
+#             n|N|NO|No|no )
+#                 set_plist Booter.Quirks.ResizeAppleGpuBars number -1
+#             ;;
+#             * )
+#                 error "Invalid Choice"
+#                 resizegpu
+#             esac
+#     }
+#     resizegpu
+#     set_plist Booter.Quirks.SetupVirtualMap bool True
+#     set_plist Booter.Quirks.SyncRuntimePermissions bool True
+#     set_plist Kernel.Emulate.DummyPowerManagement bool True
+#     # kernel patch start
+#     set_plist Kernel.Quirks.PanicNoKextDump bool True
+#     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+#     set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+#     case $os_choice in
+#         4|5 ) 
+#              set_plist Kernel.Quirks.XhciPortLimit bool False
+#         ;;
+#     esac
+#     set_plist Misc.Debug.AppleDebug bool True
+#     set_plist Misc.Debug.ApplePanic bool True
+#     set_plist Misc.Debug.DisableWatchDog bool True
+#     set_plist Misc.Debug.Target number 67
+#     set_plist Misc.Security.AllowSetDefault bool True
+#     set_plist Misc.Security.BlacklistAppleUpdate bool True
+#     set_plist Misc.Security.ScanPolicy number 0
+#     set_plist Misc.Security.SecureBootModel string Default
+#     set_plist Misc.Security.Vault string Optional
+#     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+#     # gpu args go here
+#     platforminfo(){
+#         echo "################################################################"
+#         echo "Now, we need to pick an SMBIOS."
+#         echo "Pick the closest one to your hardware"
+#         echo "1. MacPro7,1 - AMD Polaris and newer"
+#         echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
+#         echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
+#         echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
+#         echo "################################################################"
+#         read -r -p "Choose a number between 1-4: " smbios_choice
+#         case $smbios_choice in
+#             1 )
+#                case $os_choice in
+#                     5 )
+#                          error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
+#                          platforminfo
+#                     ;;
+#                     * )
+#                        smbiosname=MacPro7,1
+#                     ;;
+#                 esac
+#             ;;
+#             2 )
+#                smbiosname=iMacPro1,1
+#             ;;
+#             3 )
+#                smbiosname=iMac14,2
+#             ;;
+#             4 )
+#                smbiosname=MacPro6,1
+#             ;;
+#             * )
+#                error "Invalid Choice"
+#                platforminfo
+#             ;;
+#         esac
+#     }
+#     platforminfo
+#     case $os in
+#         Linux )
+#             chmod +x "$dir"/Utilities/macserial/macserial.linux
+#             smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+#         ;;
+#         Darwin )
+#             chmod +x "$dir"/Utilities/macserial/macserial
+#             smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+#         ;;
+#     esac
+#     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+#     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+#     UUID=$(uuidgen)
+#     set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+#     set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+#     set_plist PlatformInfo.Generic.MLB string "$MLB"
+#     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+#     case $os_choice in
+#         4 )
+#             set_plist UEFI.APFS.MinVersion number 1412101001000000
+#             set_plist UEFI.APFS.MinDate number 20200306
+#         ;;
+#         5 )
+#             set_plist UEFI.APFS.MinVersion number 945275007000000
+#             set_plist UEFI.APFS.MinDate number 20190820
+#         ;;
+#     esac
+#     hpdesktop(){
+#         echo "################################################################"
+#         echo "Do you have a HP System?"
+#         echo "################################################################"
+#         read -r -p "y/n: " hpdesktop_choice
+#         case $hpdesktop_choice in
+#             Y|y|YES|Yes|yes )
+#                 set_plist UEFI.Quirks.UnblockFsConnect bool True
+#             ;;
+#             n|N|NO|No|no )
+#                 echo "" > /dev/null
+#             ;;
+#             * )
+#                 error "Invalid Choice"
+#                 hpdesktop
+#             esac
+#     }
+#     hpdesktop
+#     info "Done!"
+#     info "Your EFI is located at $dir/EFI"
+#     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+#     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
+# }
 
 cpu_rev_laptop() {
     echo "################################################################"
@@ -3891,8 +4156,8 @@ cpu_rev_desktop() {
     echo "4. Kaby Lake"
     echo "5. Coffee Lake"
     echo "6. Comet Lake"
-    : 'echo "7. Bulldozer(15h) and Jaguar (16h)"
-     echo "8. Ryzen and Threadripper(17h and 19h)"'
+    # echo "7. Bulldozer(15h) and Jaguar (16h)"
+    # echo "8. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-6: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
