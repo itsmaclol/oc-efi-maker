@@ -2935,7 +2935,152 @@ haswell_broadwell_desktop_config_setup() {
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For intial install)\nIntel SGX\nIntel Platform Trust"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For initial install)\nIntel SGX\nIntel Platform Trust"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
+}
+
+skylake_laptop_config_setup(){
+    #device properties go here
+    cfg(){
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                echo > "" /dev/null
+            ;;
+            N|n|NO|No|no )
+                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
+            ;;
+            * )
+                error "Invalid Choice"
+                cfg
+        esac
+    }
+    cfg
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist Kernel.Quirks.DisableIoMapper bool True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist Kernel.Quirks.LapicKernelPanic bool True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    case $os_choice in
+        4|5 ) 
+             set_plist Kernel.Quirks.XhciPortLimit bool False
+        ;;
+    esac
+    set_plist Misc.Debug.AppleDebug bool True
+    set_plist Misc.Debug.ApplePanic bool True
+    set_plist Misc.Debug.DisableWatchDog bool True
+    set_plist Misc.Debug.Target number 67
+    set_plist Misc.Security.AllowSetDefault bool True
+    set_plist Misc.Security.BlacklistAppleUpdate bool True
+    set_plist Misc.Security.ScanPolicy number 0
+    set_plist Misc.Security.SecureBootModel string Default
+    set_plist Misc.Security.Vault string Optional
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    platforminfo_setup(){
+        smbiosname=iMac17,1
+    }
+    # idk if this is mandatory for ventura platform info to function
+    platforminfo_setup_ventura(){
+        echo "################################################################"
+        echo "Now, we need to pick a Kaby Lake SMBIOS, even though this is a Skylake machine."
+        echo "Pick the closest one to your hardware."
+        echo "1. iMac18,1 - Used for computers utilizing the iGPU for displaying"
+        echo "2. iMac18,3 - Used for computers using a dGPU for displaying, and an iGPU for computing tasks only"
+        echo "################################################################"
+        read -r -p "Pick a number between 1-2: " smbios_choice
+        case $smbios_choice in
+            1 )
+                smbiosname="iMac18,1"
+            ;;
+            2 )
+                smbiosname="iMac18,3"
+            ;;
+            * )
+                error "Invalid Choice"
+                platforminfo_setup_ventura
+            ;;
+        esac
+    }
+    case $os_choice in
+        1 )
+            platforminfo_setup_ventura
+        ;;
+        2|3|4|5 )
+            platforminfo_setup
+        ;;
+    esac
+    case $os in
+        Linux )
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    case $os_choice in
+        4 )
+            set_plist UEFI.APFS.MinVersion number 1412101001000000
+            set_plist UEFI.APFS.MinDate number 20200306
+        ;;
+        5 )
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
+        ;;
+    esac
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio bool True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist UEFI.Quirks.UnblockFsConnect bool True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For initial install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
 }
 
