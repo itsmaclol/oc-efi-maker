@@ -69,6 +69,8 @@ get_package_manager() {
         PACKAGE_MANAGER="pacman"
     elif command -v apk >/dev/null 2>&1; then
         PACKAGE_MANAGER="apk"
+    elif command -v zypper >/dev/null 2>&1; then
+        PACKAGE_MANAGER="zypper"
     else
         PACKAGE_MANAGER="Unknown"
     fi
@@ -140,6 +142,11 @@ dependencies() {
                         "apk" )
                             apk update
                             apk add "${missing_dependencies[@]}"
+                        ;;
+                        "zypper" )
+                            zypper refresh
+                            zypper install "${missing_dependencies[@]}"
+                        ;;
                     esac
                     info "Dependencies installed, please rerun this script."
                     exit 1
@@ -226,20 +233,20 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 info "Downloading plisteditor.py..."
 curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
-    python3 "$dir"/temp/plisteditor.py add  "$1" --type "$2" --path "$efi"/config.plist
+    python3 /Users/mac/big-projects/plist.py add  "$1" --type "$2" --path "$efi"/config.plist
 }
 
 set_plist() {
-    python3 "$dir"/temp/plisteditor.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+    python3 /Users/mac/big-projects/plist.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
 }
 
 
 delete_plist() {
-    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
+    python3 /Users/mac/big-projects/plist.py delete "$1" --path "$efi"/config.plist
 }
 
 change_plist() {
-    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
+    python3 /Users/mac/big-projects/plist.py change "$1" --new_type "$2" --path "$efi"/config.plist
 }
 echo "################################################################"
 echo "Welcome to the OpenCore EFI Maker."
@@ -1065,6 +1072,11 @@ delete_plist "#WARNING - 2"
 delete_plist "#WARNING - 3"
 delete_plist "#WARNING - 4"
 delete_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x1b,0x0)"
+
+amdkernelpatches() {
+    delete_plist Kernel.Patch
+    add_plist Kernel.Patch array
+}
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -3712,4 +3724,4 @@ case $pc_choice in # Mac note: i dont know why this makes shellcheck hang and me
     2 )
         cpu_rev_laptop
     ;;
-esac
+esac                        
