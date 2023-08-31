@@ -823,12 +823,14 @@ laptop_input_screen() {
         ;;
     esac
 }
-
-info "Downloading VoodooPS2 for PS/2 laptop keyboard..."
-curl -Ls "$VOODOOPS2_RELEASE_URL" -o "$dir"/temp/VoodooPS2Controller.zip
-unzip -q "$dir"/temp/VoodooPS2Controller.zip -d "$dir"/temp/VoodooPS2Controller
-mv "$dir"/temp/VoodooPS2Controller/VoodooPS2Controller.kext "$efi"/Kexts/VoodooPS2Controller.kext
-
+case $pc_choice in
+    2 )
+        info "Downloading VoodooPS2 for PS/2 laptop keyboard..."
+        curl -Ls "$VOODOOPS2_RELEASE_URL" -o "$dir"/temp/VoodooPS2Controller.zip
+        unzip -q "$dir"/temp/VoodooPS2Controller.zip -d "$dir"/temp/VoodooPS2Controller
+        mv "$dir"/temp/VoodooPS2Controller/VoodooPS2Controller.kext "$efi"/Kexts/VoodooPS2Controller.kext
+    ;;
+esac
 
 case $pc_choice in
     1 )
@@ -857,8 +859,8 @@ acpi_desktop() {
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    : 'echo "5. Bulldozer(15h) and Jaguar(16h)"
-    echo "6. Ryzen and Threadripper(17h and 19h)"'
+    echo "5. Bulldozer(15h) and Jaguar(16h)"
+    echo "6. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
     read -r -p "Pick a number 1-4: " acpidesktop_choice
 }
@@ -875,31 +877,65 @@ acpi_func() {
 }
 acpi_func
 
+asusmb() {
+    echo "################################################################"
+    echo "We'll need to ask you this question for gathering ACPI files."
+    echo "Do you have an Asus's 400 series motherboard?"
+    echo "################################################################"
+    read -r -p "y/n: " asus_mb_choice
+    case $asus_mb_choice in
+        y|Y|Yes|YES|yes )
+            info "Downloading SSDT-RHUB..."
+            curl -Ls "$SSDT_RHUB" -o "$efi"/ACPI/SSDT-RHUB.aml
+        ;;
+        n|N|NO|No|no )
+            echo "" > /dev/null
+        ;;
+        * )
+            error "Invalid Choice"
+            asusmb
+        ;;
+    esac
+}
+
 case $pc_choice in
     1 )
        case $acpidesktop_choice in
            4 )
-                echo "################################################################"
-                echo "We'll need to ask you this question for gathering ACPI files."
-                echo "Do you have an Asus's 400 series motherboard?"
-                echo "################################################################"
-                read -r -p "y/n: " asus_mb_choice
+                asusmb
             ;;
         esac
     ;;
 esac
 
+laptop9th_10thgen() {
+    echo "################################################################"
+    echo "We'll need to ask you this question for gathering ACPI files."
+    echo "Is your laptop a 9th gen or a 10th gen chip?"
+    echo "1. 9th gen"
+    echo "2. 10th gen"
+    echo "################################################################"
+    read -r -p "Pick a number 1 or 2: " laptopgen_choice
+    case $laptopgen_choice in
+        1 )
+            info "Downloading SSDT-PMC"
+            curl -Ls "$SSDT_PMC" -o "$efi"/ACPI/SSDT-PMC.aml
+        ;;
+        2 )
+            echo "" > /dev/null
+        ;;
+        * )
+            error "Invalid Choice"
+            laptop9th_10thgen
+        ;;
+    esac
+}
+
 case $pc_choice in
     2 )
         case $acpilaptop_choice in
             4 )
-                echo "################################################################"
-                echo "We'll need to ask you this question for gathering ACPI files."
-                echo "Is your laptop a 9th gen or a 10th gen chip?"
-                echo "1. 9th gen"
-                echo "2. 10th gen"
-                echo "################################################################"
-                read -r -p "Pick a number 1 or 2: " laptopgen_choice
+                laptop9th_10thgen
             ;;
         esac
 esac
@@ -912,11 +948,25 @@ esac
 #                echo "We'll need to ask you this question for gathering ACPI files."
 #                echo "Do you have an AM5 series motherboard? (B550/A520)"
 #                echo "################################################################"
-#                read -r -p "y/n: " am5_desktop_choice
-#            ;;
-#        esac
-#    ;;
-#esac
+#                read -r -p "y/n: " am5desktop_choice
+#             ;;
+#         esac
+#     ;;
+# esac
+
+case $pc_choice in
+    3 )
+       case $acpidesktop_choice in
+           4 )
+                echo "################################################################"
+                echo "We'll need to ask you this question for gathering ACPI files."
+                echo "Do you have an AM5 series motherboard? (B550/A520)"
+                echo "################################################################"
+                read -r -p "y/n: " am5_mb_choice
+            ;;
+        esac
+    ;;
+esac
 
 
 case $pc_choice in 
@@ -958,19 +1008,19 @@ case $pc_choice in
                     ;;
                 esac
             ;;
-            : '5 )
+            5 )
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls $SSDT_EC_USBX_DESKTOP -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
             6 )
                 info "Dowloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                case $am5_desktop_choice in
+                case $am5_mb_choice in
                     y|Y|YES|Yes|yes )
                         info "Downloading SSDT-CPUR..."
                         curl -Ls "$SSDT_CPUR" -o "$efi"/ACPI/SSDT-CPUR.aml
                 esac
-            ;;'
+            ;;
             * )
                 error "Invalid Choice"
                 acpi_desktop
@@ -1018,18 +1068,6 @@ case $pc_choice in
                 curl -Ls "$SSDT_EC_USBX_LAPTOP" -o "$efi"/ACPI/SSDT-EC-USBX-LAPTOP.aml
                 info "Downloading SSDT-AWAC..."
                 curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
-                case $laptopgen_choice in
-                    1 )
-                        info "Downloading SSDT-PMC..."
-                        curl -Ls "$SSDT_PMC" -o "$efi"/ACPI/SSDT-PMC.aml
-                    ;;
-                    2 )
-                        echo "" > /dev/null
-                    ;;
-                    * )
-                        error "Invalid Choice"
-
-                esac
                 info "Downloading SSDT-PNLF..."
                 curl -Ls "$SSDT_PNLF" -o "$efi"/ACPI/SSDT-PNLF.aml
                 info "Downloading SSDT-XOSI..."
@@ -1073,10 +1111,12 @@ delete_plist "#WARNING - 3"
 delete_plist "#WARNING - 4"
 delete_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x1b,0x0)"
 
-amdkernelpatches() {
-    delete_plist Kernel.Patch
-    add_plist Kernel.Patch array
-}
+# Mac note: fix adding arrays and children to arrays in the plist editor and finish amd kernel patches
+# amdkernelpatches() {
+#     delete_plist Kernel.Patch
+#     add_plist Kernel.Patch array
+# }
+
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -1198,7 +1238,7 @@ ice_lake_laptop_config_setup() {
     set_plist Misc.Security.ScanPolicy number 0
     set_plist Misc.Security.SecureBootModel string Default
     set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1 -igfxcdc -igfxdvmt"
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -1284,7 +1324,6 @@ coffelakeplus_cometlake_laptop_config_setup() {
     set_plist Booter.Quirks.EnableWriteUnprotector bool False
     set_plist Booter.Quirks.ProtectUefiServices bool True
     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
-    set_plist Booter.Quirks.SetupVirtualMap bool False
     set_plist Booter.Quirks.SyncRuntimePermissions bool True
     aapl() {
         echo "################################################################"
@@ -1737,25 +1776,6 @@ kabylake_laptop_config_setup() {
     info "Configuring config.plist for Kaby Lake Laptop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data 
-    chromebook() {
-        echo "################################################################"
-        echo "Is this laptop a chromebook?"
-        echo "################################################################"
-        read -r -p "y/n: " chromebook_choice
-        case $chromebook_choice in
-            y|Y|Yes|yes|YES )
-                set_plist Booter.Quirks.ProtectMemoryRegions bool True
-            ;;
-            n|N|No|NO )
-                echo "" >> /dev/null
-            ;;
-            * )
-                error "Invalid Choice"
-                chromebook
-            ;;
-        esac
-    }
-    chromebook
     aapl_plat_id() {
         echo "################################################################"
         echo "We're going to need to pick a AAPL,ig-platform-id closest to your specifications."
@@ -1970,6 +1990,24 @@ kabylake_laptop_config_setup() {
 }
 
 skylake_laptop_config_setup() {
+    case $os_choice in
+        1 )
+            warning "You have chosen macOS Ventura for a SkyLake Laptop. The script will attempt to spoof it to a kaby lake system for you to have a working system. This script may not do the spoofing correctly and your system may end up with no graphic acceleration. Do you want to continue?"
+            read -r -p "y/n: " spoof_choice
+            case $spoof_choice in
+                y|Y|YES|Yes|yes )
+                    echo "" > /dev/null
+                ;;
+                n|N|NO|No|no )
+                    error "Exiting..."
+                    exit 1
+                ;;
+            esac
+        ;;
+        * )
+            echo "" > /dev/null
+        ;;
+    esac
     info "Configuring config.plist for Skylake Laptop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data 
@@ -2049,6 +2087,24 @@ skylake_laptop_config_setup() {
                 ventura_aapl_plat_id
         esac
         }
+        warning "If you have a HD 550 and P530 (and potentially all HD P-series iGPUs)"
+        sleep 10
+        hd510() {
+            echo "################################################################"
+            echo "Do you have a HD 510?"
+            echo "################################################################"
+            read -r -p "y/n: " hd510_choice
+            case $hd510_choice in
+                y|Y|yes|YES|Yes )
+                    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data
+                    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data 02190000
+                ;;
+                * )
+                    error "Invalid Choice"
+                    hd510
+                ;;
+            esac
+        }
         hd520() {
             echo "################################################################"
             echo "Is your GPU a HD 520?"
@@ -2072,6 +2128,7 @@ skylake_laptop_config_setup() {
         ;;
         2|3|4|5 )
             aapl_plat_id
+            hd510
         ;;
         esac
     set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
@@ -2277,7 +2334,7 @@ skylake_laptop_config_setup() {
 }
 
 broadwell_laptop_config_setup() {
-    info "Configuring config.plit for Broadwell Laptop..."
+    info "Configuring config.plist for Broadwell Laptop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data 
     aapl_plat_id() {
@@ -2494,7 +2551,7 @@ broadwell_laptop_config_setup() {
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "You must disable CFG-Lock in BIOS."
+    warning "You must enable CFG-Lock in BIOS."
 }
 
 haswell_laptop_config_setup() {
@@ -2759,8 +2816,7 @@ haswell_broadwell_desktop_config_setup() {
         esac
     }
     aapl_plat_id
-    echo "$plat_id" | xxd -r -p - > "$dir"/temp/aapl_id.bin
-    import_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" "$dir"/temp/aapl_id.bin
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
     hd4400() {
         echo "################################################################"
         echo "Do you have a HD4400?"
@@ -2768,9 +2824,8 @@ haswell_broadwell_desktop_config_setup() {
         read -r -p "y/n: " hd4400_choice
         case $hd4400_choice in
             y|Y|YES|Yes|yes )   
-                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" data
-                echo "12040000" | xxd -r -p - > "$dir"/temp/deviceid.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):device-id" "$dir"/temp/deviceid.bin
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data 12040000
             ;;
             n|N|NO|No|no )
                 echo "" > /dev/null
@@ -2792,15 +2847,12 @@ haswell_broadwell_desktop_config_setup() {
                 echo "" > /dev/null
             ;;
             n|N|NO|No|no )
-                echo "01000000" | xxd -r -p - > "$dir"/temp/framebuffer_patch_enable.bin
-                echo "00003001" | xxd -r -p - > "$dir"/temp/framebuffer_stolenmem.bin 
-                echo "00009000" | xxd -r -p - > "$dir"/temp/framebuffer_fbmem
-                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" data
-                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" data
-                add_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" data
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-patch-enable" "$dir"/temp/framebuffer-patch-enable.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-stolenmem" "$dir"/temp/framebuffer-stolenmem.bin
-                import_plist ":DeviceProperties:Add:PciRoot(0x0)/Pci(0x2,0x0):framebuffer-fbmem" "$dir"/temp/framebuffer-fbmem.bin
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" 00009000
             ;;
             * )
                 error "Invalid Choice"
@@ -2847,7 +2899,6 @@ haswell_broadwell_desktop_config_setup() {
         esac
     }
     vtd
-    set_plist Kernel.Quirks.DisableIoMapper bool True
     set_plist Kernel.Quirks.PanicNoKextDump bool True
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     case $os_choice in
@@ -2951,9 +3002,297 @@ haswell_broadwell_desktop_config_setup() {
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
 }
 
+skylake_desktop_config_setup() {
+    info "Configuring config.plist for Skylake desktop..."
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
+    aapl_plat_id() {
+        echo "################################################################"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Pick the one closest to your hardware."
+        echo "1. 00001219 - Used when the Desktop Skylake iGPU is used to drive a display"
+        echo "2. 01001219 - Used when the Desktop Skylake iGPU is only used for computing tasks and doesn't drive a display"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " aapl_plat_id
+        case $aapl_plat_id in
+            1 )
+                plat_id="00001219"
+            ;;
+            2 )
+                plat_id="01001219"
+            ;;
+            * )
+                error "Invalid Choice"
+                aapl_plat_id
+            ;;
+        esac
+    }
+    ventura_aapl_plat_id() {
+        echo "################################################################"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Since this is a skylake machine and you want to install macOS Ventura on it, we are going to be picking a kaby lake ig-platform-id."
+        echo "1. 00001259 - Used when the Desktop Kaby Lake iGPU is used to drive a display"
+        echo "2. 03001259 - Used when the Desktop Kaby Lake iGPU is only used for computing tasks and doesn't drive a display"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " ventura_aapl_plat_id
+        case $ventura_aapl_plat_id in
+            1 )
+                plat_id="00001259"
+            ;;
+            2 )
+                plat_id="03001259"
+            ;;
+            * )
+                error "Invalid Choice"
+                ventura_aapl_plat_id
+            ;;
+        esac
+    }
+    P530() {
+        echo "################################################################"
+        echo "Do you have a Intel HD P530?"
+        echo "################################################################"
+        read -r -p "y/n: " p530_choice
+        case $p530_choice in
+            y|Y|YES|Yes|yes )
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).device-id" data 1B190000
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                P530
+            ;;
+        esac
+    }
+    case $os_choice in
+        1 )
+            ventura_aapl_plat_id
+        ;;
+        2|3|4|5 )
+            aapl_plat_id
+            P530
+        ;;
+    esac
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
+    dmvt() {
+        echo "################################################################"
+        echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
+        echo "################################################################"
+        read -r -p "y/n: " dmvt_choice
+        case $dmvt_choice in
+            y|Y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" 00009000
+            ;;
+            * )
+                error "Invalid Choice"
+                dmvt
+            ;;
+        esac
+    }
+    dmvt
+    cfglock() {
+        echo "################################################################"
+        echo "Is CFG-Lock enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " cfg_choice
+        case $cfg_choice in
+            y|Y|YES|yes|Yes )
+                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                cfglock
+            ;;
+        esac
+    }
+    cfglock
+    vtd() {
+        echo "################################################################"
+        echo "Is VT-D enabled in BIOS?"
+        echo "################################################################"
+        read -r -p "y/n: " vtd_choice
+        case $vtd_choice in
+            y|Y|YES|yes|Yes )
+                set_plist Kernel.Quirks.DisableIoMapper bool True
+            ;;
+            N|n|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                vtd
+            ;;
+        esac
+    }
+    vtd
+    hpdesktop() {
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist Kernel.Quirks.LapicKernelPanic bool True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                hpdesktop
+            ;;
+        esac
+    }
+    hpdesktop
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    case $os_choice in
+        4|5 )
+            set_plist Kernel.Quirks.XhciPortLimit False
+        ;;
+    esac
+    set_plist Misc.Debug.AppleDebug bool True
+    set_plist Misc.Debug.ApplePanic bool True
+    set_plist Misc.Debug.DisableWatchDog bool True
+    set_plist Misc.Debug.Target number 67
+    set_plist Misc.Security.AllowSetDefault bool True
+    set_plist Misc.Security.BlacklistAppleUpdate bool True
+    set_plist Misc.Security.ScanPolicy number 0
+    set_plist Misc.Security.SecureBootModel string Default
+    set_plist Misc.Security.Vault string Optional
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    ventura_platforminfo() {
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware."
+        echo "1. iMac18,1 - Kaby Lake with only iGPU"
+        echo "2. iMac18,3 - Kaby Lake with dGPU"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " ventura_smbios_choice
+        case $ventura_smbios_choice in
+            1 )
+                smbiosname="iMac18,1"
+            ;;
+            2 )
+                smbiosname="iMac18,3"
+            ;;
+            * )
+                error "Invalid Choice"
+                ventura_platforminfo
+            ;;
+        esac
+    }
+    case $os_choice in
+        1 )
+            ventura_platforminfo
+        ;;
+        2|3|4|5 )
+            smbiosname="iMac17,1"
+        ;;
+    esac
+    case $os in
+        Linux )
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    case $os_choice in
+        4 )
+            set_plist UEFI.APFS.MinVersion number 1412101001000000
+            set_plist UEFI.APFS.MinDate number 20200306
+        ;;
+        5 )
+            set_plist UEFI.APFS.MinVersion number 945275007000000
+            set_plist UEFI.APFS.MinDate number 20190820
+        ;;
+    esac
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
+    case $hpdesktop_choice in
+        y|Yes|YES|Y|yes )
+            set_plist UEFI.Quirks.UnblockFsConnect bool True
+        ;;
+    esac
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\n Compatibility Support Module (CSM)\nThunderbolt (For intial install)\nIntel SGX\nIntel Platform Trust"
+    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI-XHCI Hand-off\n OS Type (Other OS) Windows 8.1/10 UEFI Mode\nDVMT Pre-Allocated(iGPU Memory) 64MB or higher\nSATA Mode: AHCI\nCFG Lock"
+}
+
 kabylake_desktop_config_setup(){
-    #device properties go here
-        cfg(){
+    info "Configuring config.plist for Kaby Lake desktop..."
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
+    aapl_plat_id() {
+        echo "################################################################"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Pick the one closest to your hardware."
+        echo "1. 00001219 - Used when the Desktop Kaby Lake iGPU is used to drive a display"
+        echo "2. 03001259 - Used when the Desktop Kaby Lake iGPU is only used for computing tasks and doesn't drive a display"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " aapl_plat_id
+        case $aapl_plat_id in
+            1 )
+                plat_id="00001219"
+            ;;
+            2 )
+                plat_id="03001259"
+            ;;
+            * )
+                error "Invalid Choice"
+                aapl_plat_id
+            ;;
+        esac
+    }
+    aapl_plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
+    dmvt() {
+        echo "################################################################"
+        echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
+        echo "################################################################"
+        read -r -p "y/n: " dmvt_choice
+        case $dmvt_choice in
+            y|Y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+            ;;
+            * )
+                error "Invalid Choice"
+                dmvt
+            ;;
+        esac
+    }
+    dmvt
+    cfglock(){
         echo "################################################################"
         echo "Is CFG-Lock enabled in BIOS?"
         echo "################################################################"
@@ -2967,10 +3306,10 @@ kabylake_desktop_config_setup(){
             ;;
             * )
                 error "Invalid Choice"
-                cfg
+                cfglock
         esac
     }
-    cfg
+    cfglock
     vtd() {
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
@@ -3074,7 +3413,6 @@ kabylake_desktop_config_setup(){
             set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -3087,19 +3425,38 @@ kabylake_desktop_config_setup(){
 }
 
 coffeelake_desktop_config_setup(){
+    info "Configuring config.plist for Coffee Lake desktop..."
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
     set_plist Booter.Quirks.DevirtualizeMmio bool True
     set_plist Booter.Quirks.EnableWriteUnprotector bool False
-    set_plist Booter.Quirks.ProtectUefiServices bool True
+    z390() {
+        echo "################################################################"
+        echo "Do you have a Z390 Motherboard?"
+        echo "################################################################"
+        read -r -p "y/n: " z390_choice
+        case $z390_choice in
+            y|Y|YES|Yes|yes )
+                set_plist Booter.Quirks.ProtectUefiServices bool True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                z390
+            esac
+    }
+    z390
     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
-    set_plist Booter.Quirks.ResizeAppleGpuBars number -1
     resizegpu(){
         echo "################################################################"
-        echo "Does your GPU support Resizeable BAR?"
+        echo "Does your firmware support Resizeable BAR?"
         echo "################################################################"
         read -r -p "y/n: " resizegpu_choice
         case $resizegpu_choice in
             Y|y|YES|Yes|yes )
-                set_plist Booter.Quirks.ResizeAppleGpuBars number 1
+                set_plist Booter.Quirks.ResizeAppleGpuBars number 0
             ;;
             n|N|NO|No|no )
                 set_plist Booter.Quirks.ResizeAppleGpuBars number -1
@@ -3111,8 +3468,56 @@ coffeelake_desktop_config_setup(){
     }
     resizegpu
     set_plist Booter.Quirks.SyncRunetimePermissions bool True
-    # device properties here 
-        cfg(){
+    aapl_plat_id () {
+        echo "################################################################"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Pick the one closest to your hardware."
+        echo "1. 07009B3E - Used when the Desktop Coffee Lake iGPU is used to drive a display"
+        echo "2. 00009B3E - Alternative to 07009B3E if it doesn't work"
+        echo "3. 0300913E - Used when the Desktop Coffee Lake iGPU is only used for computing tasks and doesn't drive a display"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " aapl_plat_id
+        case $aapl_plat_id in
+            1 )
+                plat_id="00009B3E"
+            ;;
+            2 )
+                plat_id="00009B3E"
+            ;;
+            3 )
+                plat_id="0300913E"
+            ;;
+            * )
+                error "Invalid Choice"
+                aapl_plat_id
+            ;;
+        esac
+    }
+    aapl_plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
+    dmvt() {
+        echo "################################################################"
+        echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
+        echo "################################################################"
+        read -r -p "y/n: " dmvt_choice
+        case $dmvt_choice in
+            y|Y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+            ;;
+            * )
+                error "Invalid Choice"
+                dmvt
+            ;;
+        esac
+    }
+    dmvt
+    cfglock(){
         echo "################################################################"
         echo "Is CFG-Lock enabled in BIOS?"
         echo "################################################################"
@@ -3126,10 +3531,10 @@ coffeelake_desktop_config_setup(){
             ;;
             * )
                 error "Invalid Choice"
-                cfg
+                cfglock
         esac
     }
-    cfg
+    cfglock
     vtd() {
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
@@ -3224,38 +3629,104 @@ coffeelake_desktop_config_setup(){
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
 }
 
-cometlake_desktop_config_setup(){
-    set_plist Booter.Quirks.DevirtualizeMmio bool True
-    set_plist Booter.Quirks.EnableWriteUnprotector bool False
-    set_plist Booter.Quirks.ProtectUefiServices bool True
-    set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
-    set_plist Booter.Quirks.ResizeAppleGpuBars number -1
-    set_plist Booter.Quirks.SyncRunetimePermissions bool True
-    #device properties here 
-    #case $os_choice in
-        #4 )
-           #import_plist Kernel.Patch. #i dont know how to add a new dictionary >.<
-        #;;
-    #esac
-    cfg(){
+amd1516_desktop_config_setup(){
+    set_plist Kernel.Emulate.DummyPowerManagement bool True
+    # kernel patch start
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+    case $os_choice in
+        4|5 ) 
+             set_plist Kernel.Quirks.XhciPortLimit bool False
+        ;;
+    esac
+    set_plist Misc.Debug.AppleDebug bool True
+    set_plist Misc.Debug.ApplePanic bool True
+    set_plist Misc.Debug.DisableWatchDog bool True
+    set_plist Misc.Debug.Target number 67
+    set_plist Misc.Security.AllowSetDefault bool True
+    set_plist Misc.Security.BlacklistAppleUpdate bool True
+    set_plist Misc.Security.ScanPolicy number 0
+    set_plist Misc.Security.SecureBootModel string Default
+    set_plist Misc.Security.Vault string Optional
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    #gpu args and what not go here
+    platforminfo(){
+        echo "################################################################"
+        echo "Now, we need to pick a AAPL,ig-platform-id."
+        echo "Pick the one closest to your hardware."
+        echo "1. 07009B3E - Used when the Desktop Comet Lake iGPU is used to drive a display"
+        echo "2. 00009B3E - Alternative to 07009B3E if it doesn't work"
+        echo "3. 0300C89B - Used when the Desktop Comet Lake iGPU is only used for computing tasks and doesn't drive a display"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " aapl_plat_id
+        case $aapl_plat_id in
+            1 )
+                plat_id="00009B3E"
+            ;;
+            2 )
+                plat_id="00009B3E"
+            ;;
+            3 )
+                plat_id="0300C89B"
+            ;;
+            * )
+                error "Invalid Choice"
+                aapl_plat_id
+            ;;
+        esac
+    }
+    aapl_plat_id
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data "$plat_id"
+    dmvt() {
+        echo "################################################################"
+        echo "Can you put your DMVT iGPU allocated memory to more than 64mb in bios?"
+        echo "################################################################"
+        read -r -p "y/n: " dmvt_choice
+        case $dmvt_choice in
+            y|Y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
+                add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+            ;;
+            * )
+                error "Invalid Choice"
+                dmvt
+            ;;
+        esac
+    }
+    dmvt
+    # Mac note: Do Kernel Patches for I225-V
+    cfglock(){
         echo "################################################################"
         echo "Is CFG-Lock enabled in BIOS?"
         echo "################################################################"
         read -r -p "y/n: " cfg_choice
         case $cfg_choice in
             y|Y|YES|yes|Yes )
-                echo > "" /dev/null
+                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
             ;;
             N|n|NO|No|no )
-                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
+                echo "" > /dev/null
             ;;
             * )
                 error "Invalid Choice"
-                cfg
+                cfglock
         esac
     }
-    cfg
-    vtd() {
+    hpdesktop
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
+}
+
+amd1719_desktop_config_setup(){
+    trx40(){
         echo "################################################################"
         echo "Is VT-D enabled in BIOS?"
         echo "################################################################"
@@ -3308,6 +3779,7 @@ cometlake_desktop_config_setup(){
     set_plist Misc.Security.SecureBootModel string Default
     set_plist Misc.Security.Vault string Optional
     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.WriteFlash bool True
     # gpu and network args go here
     platforminfo(){
         echo "################################################################"
@@ -3358,7 +3830,6 @@ cometlake_desktop_config_setup(){
             set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio bool True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -3366,271 +3837,9 @@ cometlake_desktop_config_setup(){
     esac
     info "Done!"
     info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nThunderbolt (For intital install)\nIntel SGX\nIntel Platform Trust\nCFG Lock"
-    warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
-    #gumi note: mayb add smth pertaining to 2020+ bios regarding Above4G
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
 }
-
-: 'amd1516_desktop_config_setup(){
-    set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patch start
-    set_plist Kernel.Quirks.PanicNoKextDump bool True
-    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
-    case $os_choice in
-        4|5 ) 
-             set_plist Kernel.Quirks.XhciPortLimit bool False
-        ;;
-    esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target number 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy number 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
-    #gpu args and what not go here
-    platforminfo(){
-        echo "################################################################"
-        echo "Now, we need to pick an SMBIOS."
-        echo "Pick the closest one to your hardware"
-        echo "1. MacPro7,1 - AMD Polaris and newer"
-        echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
-        echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
-        echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
-        echo "################################################################"
-        read -r -p "Choose a number between 1-4: " smbios_choice
-        case $smbios_choice in
-            1 )
-               case $os_choice in
-                    5 )
-                         error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
-                         platforminfo
-                    ;;
-                    * )
-                       smbiosname=MacPro7,1
-                    ;;
-                esac
-            ;;
-            2 )
-               smbiosname=iMacPro1,1
-            ;;
-            3 )
-               smbiosname=iMac14,2
-            ;;
-            4 )
-               smbiosname=MacPro6,1
-            ;;
-            * )
-               error "Invalid Choice"
-               platforminfo
-            ;;
-        esac
-    }
-    platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
-    case $os_choice in
-        4 )
-            set_plist UEFI.APFS.MinVersion number 1412101001000000
-            set_plist UEFI.APFS.MinDate number 20200306
-        ;;
-        5 )
-            set_plist UEFI.APFS.MinVersion number 945275007000000
-            set_plist UEFI.APFS.MinDate number 20190820
-        ;;
-    esac
-    hpdesktop(){
-        echo "################################################################"
-        echo "Do you have a HP System?"
-        echo "################################################################"
-        read -r -p "y/n: " hpdesktop_choice
-        case $hpdesktop_choice in
-            Y|y|YES|Yes|yes )
-                set_plist UEFI.Quirks.UnblockFsConnect bool True
-            ;;
-            n|N|NO|No|no )
-                echo "" > /dev/null
-            ;;
-            * )
-                error "Invalid Choice"
-                hpdesktop
-            esac
-    }
-    hpdesktop
-    info "Done!"
-    info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
-    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-}'
-
-: 'amd1719_desktop_config_setup(){
-    trx40(){
-        echo "################################################################"
-        echo "Do you have a TRx40 system?"
-        echo "################################################################"
-        read -r -p "y/n: " trx40_choice
-        case $trx40_choice in
-            Y|y|YES|Yes|yes )
-                echo "" > /dev/null
-            ;;
-            n|N|NO|No|no )
-                set_plist Booter.Quirks.DevirtualizeMmio bool True
-            ;;
-            * )
-                error "Invalid Choice"
-                trx40
-            esac
-    }
-    trx40
-    set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
-    resizegpu(){
-        echo "################################################################"
-        echo "Does your GPU support Resizeable BAR?"
-        echo "################################################################"
-        read -r -p "y/n: " resizegpu_choice
-        case $resizegpu_choice in
-            Y|y|YES|Yes|yes )
-                set_plist Booter.Quirks.ResizeAppleGpuBars number 1
-            ;;
-            n|N|NO|No|no )
-                set_plist Booter.Quirks.ResizeAppleGpuBars number -1
-            ;;
-            * )
-                error "Invalid Choice"
-                resizegpu
-            esac
-    }
-    resizegpu
-    set_plist Booter.Quirks.SetupVirtualMap bool True
-    set_plist Booter.Quirks.SyncRuntimePermissions bool True
-    set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patch start
-    set_plist Kernel.Quirks.PanicNoKextDump bool True
-    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
-    case $os_choice in
-        4|5 ) 
-             set_plist Kernel.Quirks.XhciPortLimit bool False
-        ;;
-    esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target number 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy number 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
-    # gpu args go here
-    platforminfo(){
-        echo "################################################################"
-        echo "Now, we need to pick an SMBIOS."
-        echo "Pick the closest one to your hardware"
-        echo "1. MacPro7,1 - AMD Polaris and newer"
-        echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
-        echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
-        echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
-        echo "################################################################"
-        read -r -p "Choose a number between 1-4: " smbios_choice
-        case $smbios_choice in
-            1 )
-               case $os_choice in
-                    5 )
-                         error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
-                         platforminfo
-                    ;;
-                    * )
-                       smbiosname=MacPro7,1
-                    ;;
-                esac
-            ;;
-            2 )
-               smbiosname=iMacPro1,1
-            ;;
-            3 )
-               smbiosname=iMac14,2
-            ;;
-            4 )
-               smbiosname=MacPro6,1
-            ;;
-            * )
-               error "Invalid Choice"
-               platforminfo
-            ;;
-        esac
-    }
-    platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
-    case $os_choice in
-        4 )
-            set_plist UEFI.APFS.MinVersion number 1412101001000000
-            set_plist UEFI.APFS.MinDate number 20200306
-        ;;
-        5 )
-            set_plist UEFI.APFS.MinVersion number 945275007000000
-            set_plist UEFI.APFS.MinDate number 20190820
-        ;;
-    esac
-    hpdesktop(){
-        echo "################################################################"
-        echo "Do you have a HP System?"
-        echo "################################################################"
-        read -r -p "y/n: " hpdesktop_choice
-        case $hpdesktop_choice in
-            Y|y|YES|Yes|yes )
-                set_plist UEFI.Quirks.UnblockFsConnect bool True
-            ;;
-            n|N|NO|No|no )
-                echo "" > /dev/null
-            ;;
-            * )
-                error "Invalid Choice"
-                hpdesktop
-            esac
-    }
-    hpdesktop
-    info "Done!"
-    info "Your EFI is located at $dir/EFI"
-    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
-    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-}'
 
 cpu_rev_laptop() {
     echo "################################################################"
