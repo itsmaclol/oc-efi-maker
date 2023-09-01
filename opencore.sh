@@ -233,20 +233,20 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 info "Downloading plisteditor.py..."
 curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
-    python3 "$dir"/temp/plisteditor.py add  "$1" --type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efi"/config.plist
 }
 
 set_plist() {
-    python3 "$dir"/temp/plisteditor.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efi"/config.plist
 }
 
 
 delete_plist() {
-    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efi"/config.plist
 }
 
 change_plist() {
-    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efi"/config.plist
 }
 echo "################################################################"
 echo "Welcome to the OpenCore EFI Maker."
@@ -310,27 +310,27 @@ macos_choice(){
         1 )
             os_name="Ventura"  
             info "Downloading macOS Ventura, please wait..."
-            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download   
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download   
         ;;
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download
         ;;
         3 )
             os_name="BigSur"
             info "Downloading macOS Big Sur, please wait..."
-            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download
         ;;
         4 )
             os_name="Catalina"
             info "Downloading macOS Catalina, please wait..."
-            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download
         ;;
         5 )
             os_name="Mojave"
             info "Downloading macOS Mojave, please wait..."
-            #python3 ""$dir""/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download
         ;;
         * )
             error "Invalid Choice"
@@ -343,6 +343,7 @@ info "Setting up EFI Folder Structure..."
 sleep 3
 efi="$dir"/EFI/EFI/OC
 mkdir -p "$efi"
+#cp -r "$dir"/Utilities/macrecovery/com.apple.recovery.boot "$dir"/EFI/com.apple.recovery.boot
 cp -r "$dir"/X64/EFI/BOOT "$dir"/EFI/EFI/BOOT
 cp -r "$dir"/X64/EFI/OC/ACPI "$efi"/ACPI
 cp -r "$dir"/X64/EFI/OC/Kexts "$efi"/Kexts
@@ -2055,6 +2056,8 @@ skylake_laptop_config_setup() {
                 aapl_plat_id
             ;;
         esac
+        warning "For HD 550 and P530 (and potentially all HD P-series iGPUs), you may need to use device-id=16190000"
+        sleep 10
     }
     ventura_aapl_plat_id() {
         echo "################################################################"
@@ -2092,8 +2095,6 @@ skylake_laptop_config_setup() {
                 ventura_aapl_plat_id
         esac
         }
-        warning "If you have a HD 550 and P530 (and potentially all HD P-series iGPUs)"
-        sleep 10
         hd510() {
             echo "################################################################"
             echo "Do you have a HD 510?"
@@ -2612,7 +2613,7 @@ haswell_laptop_config_setup() {
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
     set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-cursormem" data
-    import_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-cursormem" data 00009000
+    set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-cursormem" data 00009000
     set_plist Kernel.Quirks.AppleCpuPmCfgLock bool True
     set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
     vtd() {
@@ -2782,7 +2783,7 @@ haswell_laptop_config_setup() {
         ;;
     esac
     set_plist UEFI.Quirks.ReleaseUsbOwnership bool True
-    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio bool True
     case $hplaptop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -2794,7 +2795,9 @@ haswell_laptop_config_setup() {
 }
 
 haswell_broadwell_desktop_config_setup() {
-    #gumi note: will update device properties to new format later
+    info "Configuring config.plist for Haswell/Broadwell Desktop..."
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
+    add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
     aapl_plat_id() {
         echo "################################################################"
         echo "Now, we need to pick a AAPL,ig-platform-id."
@@ -2855,9 +2858,9 @@ haswell_broadwell_desktop_config_setup() {
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" 00009000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
             ;;
             * )
                 error "Invalid Choice"
@@ -2995,7 +2998,7 @@ haswell_broadwell_desktop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio bool True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -3095,9 +3098,9 @@ skylake_desktop_config_setup() {
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" 00009000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-fbmem" data 00009000
             ;;
             * )
                 error "Invalid Choice"
@@ -3236,7 +3239,7 @@ skylake_desktop_config_setup() {
             set_plist UEFI.APFS.MinDate number 20190820
         ;;
     esac
-    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio True
+    set_plist UEFI.Quirks.IgnoreInvalidFlexRatio bool True
     case $hpdesktop_choice in
         y|Yes|YES|Y|yes )
             set_plist UEFI.Quirks.UnblockFsConnect bool True
@@ -3287,8 +3290,8 @@ kabylake_desktop_config_setup(){
             n|N|NO|No|no )
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
             ;;
             * )
                 error "Invalid Choice"
@@ -3304,10 +3307,10 @@ kabylake_desktop_config_setup(){
         read -r -p "y/n: " cfg_choice
         case $cfg_choice in
             y|Y|YES|yes|Yes )
-                echo > "" /dev/null
+                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
             ;;
             N|n|NO|No|no )
-                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
+                echo "" > /dev/null
             ;;
             * )
                 error "Invalid Choice"
@@ -3433,7 +3436,7 @@ coffeelake_desktop_config_setup() {
     info "Configuring config.plist for Coffee Lake desktop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
-    set_plist Booter.Quirks.DevirtualizeMmio bool True
+    set_plist Booter.Quirks.DevirtualiseMmio bool True
     set_plist Booter.Quirks.EnableWriteUnprotector bool False
     z390() {
         echo "################################################################"
@@ -3472,7 +3475,7 @@ coffeelake_desktop_config_setup() {
             esac
     }
     resizegpu
-    set_plist Booter.Quirks.SyncRunetimePermissions bool True
+    set_plist Booter.Quirks.SyncRuntimePermissions bool True
     aapl_plat_id () {
         echo "################################################################"
         echo "Now, we need to pick a AAPL,ig-platform-id."
@@ -3512,8 +3515,8 @@ coffeelake_desktop_config_setup() {
             n|N|NO|No|no )
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
             ;;
             * )
                 error "Invalid Choice"
@@ -3529,10 +3532,10 @@ coffeelake_desktop_config_setup() {
         read -r -p "y/n: " cfg_choice
         case $cfg_choice in
             y|Y|YES|yes|Yes )
-                echo > "" /dev/null
+                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
             ;;
             N|n|NO|No|no )
-                set_plist Kernel.Quirks.AppleXcpmCfgLock bool True
+                echo "" > /dev/null
             ;;
             * )
                 error "Invalid Choice"
@@ -3638,7 +3641,7 @@ cometlake_desktop_config_setup(){
     info "Configuring config.plist for Comet Lake desktop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
-    set_plist Booter.Quirks.DevirtualizeMmio bool True
+    set_plist Booter.Quirks.DevirtualiseMmio bool True
     set_plist Booter.Quirks.EnableWriteUnprotector bool False
     set_plist Booter.Quirks.ProtectUefiServices bool True
     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
@@ -3660,7 +3663,7 @@ cometlake_desktop_config_setup(){
             esac
     }
     resizegpu
-    set_plist Booter.Quirks.SyncRunetimePermissions bool True
+    set_plist Booter.Quirks.SyncRuntimePermissions bool True
     aapl_plat_id() {
         echo "################################################################"
         echo "Now, we need to pick a AAPL,ig-platform-id."
@@ -3700,8 +3703,8 @@ cometlake_desktop_config_setup(){
             n|N|NO|No|no )
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data
                 add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" 01000000
-                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" 00003001
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-patch-enable" data 01000000
+                set_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).framebuffer-stolenmem" data 00003001
             ;;
             * )
                 error "Invalid Choice"
@@ -3765,8 +3768,8 @@ cometlake_desktop_config_setup(){
             esac
     }
     hpdesktop
-    set_plist set_plist Kernel.Quirks.PanicNoKextDump bool True
-    set_plist set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
     case $os_choice in
         4|5 ) 
              set_plist Kernel.Quirks.XhciPortLimit bool False
@@ -3782,7 +3785,8 @@ cometlake_desktop_config_setup(){
     set_plist Misc.Security.SecureBootModel string Default
     set_plist Misc.Security.Vault string Optional
     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.WriteFlash bool True
+    #mac note: idk why this shit isnt working ffs
+    #set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.LegacySchema.WriteFlash bool True
     # gpu and network args go here
     platforminfo(){
         echo "################################################################"
@@ -4161,10 +4165,7 @@ cpu_rev_desktop() {
     echo "################################################################"
     read -r -p "Pick a number 1-6: " desktop_cpu_gen_choice
     case $desktop_cpu_gen_choice in
-        1 )
-            haswell_broadwelldesktop_config_setup
-        ;;
-        2 ) 
+        1|2 ) 
             haswell_broadwell_desktop_config_setup
         ;;
         3 )
