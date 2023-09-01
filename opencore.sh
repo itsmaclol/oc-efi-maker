@@ -136,16 +136,16 @@ dependencies() {
                             sudo apt-get install "${missing_dependencies[@]}" -y
                         ;;
                         "yum"|"dnf" )
-                            dnf update
-                            dnf install "${missing_dependencies[@]}" -y
+                            sudo dnf update
+                            sudo dnf install "${missing_dependencies[@]}" -y
                         ;;
                         "apk" )
-                            apk update
-                            apk add "${missing_dependencies[@]}"
+                            sudo apk update
+                            sudo apk add "${missing_dependencies[@]}"
                         ;;
                         "zypper" )
-                            zypper refresh
-                            zypper install "${missing_dependencies[@]}"
+                            sudo zypper refresh
+                            sudo zypper --non-interactive install "${missing_dependencies[@]}"
                         ;;
                     esac
                     info "Dependencies installed, please rerun this script."
@@ -3429,7 +3429,7 @@ kabylake_desktop_config_setup(){
     warning "Please enable the following options in the BIOS.\nVT-x\nAbove 4G Decoding\nHyper-Threading\nExecute Disable Bit\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nDVMT Pre-Allocated(iGPU Memory): 64MB or higher\nSATA Mode: AHCI"
 }
 
-coffeelake_desktop_config_setup(){
+coffeelake_desktop_config_setup() {
     info "Configuring config.plist for Coffee Lake desktop..."
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0)" dict
     add_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x2,0x0).AAPL,ig-platform-id" data
