@@ -233,20 +233,20 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 info "Downloading plisteditor.py..."
 curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
-    python3 /Users/mac/big-projects/plist.py add  "$1" --type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py add  "$1" --type "$2" --path "$efi"/config.plist
 }
 
 set_plist() {
-    python3 /Users/mac/big-projects/plist.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py set  "$1" --type "$2" --value "$3" --path "$efi"/config.plist
 }
 
 
 delete_plist() {
-    python3 /Users/mac/big-projects/plist.py delete "$1" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
 }
 
 change_plist() {
-    python3 /Users/mac/big-projects/plist.py change "$1" --new_type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
 }
 echo "################################################################"
 echo "Welcome to the OpenCore EFI Maker."
