@@ -34,7 +34,7 @@ This project was made for fun, and the EFI's that this script generates are only
 
 [acidanthera](https://github.com/acidanthera) for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
 
-[Corpnewt](https://github.com/corpnewt.com) For [OCSnapshot](https://github.com/corpnewt/OCSnapshot)
+[Corpnewt](https://github.com/corpnewt) For [OCSnapshot](https://github.com/corpnewt/OCSnapshot)
 
 & more...
 
