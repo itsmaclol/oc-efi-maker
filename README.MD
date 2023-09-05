@@ -1,5 +1,5 @@
 # oc-efi-maker
-oc-efi-maker is a script to generate an OpenCore EFI files, to hackintosh your computer.
+oc-efi-maker is a script to generate an OpenCore EFI files, to Install macOS your computer.
 ## Installaton
 Running the script locally:
 ### Linux and macOS
@@ -28,12 +28,14 @@ opencore.bat
 This project was made for fun, and the EFI's that this script generates are only for testing purposes, if you want an actual stable hackintosh, please follow [the dortania guide](https://dortania.github.io/OpenCore-Install-Guide)
 
 ## Credits
-Apple for macOS
+[Apple](https://www.apple.com) for macOS
 
-Dortania for the OpenCore guide
+[Dortania](https://github.com/dortania) for [the OpenCore guide](https://dortania.github.io/OpenCore-Install-Guide)
 
-acidanthera for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
+[acidanthera](https://github.com/acidanthera) for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
+
+[Corpnewt](https://github.com/corpnewt.com) For [OCSnapshot](https://github.com/corpnewt/OCSnapshot)
 
 & more...
 
-Made with <3 by Mac
+Made with <3 by [Mac](https://github.com/itsmaclol)
