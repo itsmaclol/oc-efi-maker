@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 os=$(uname)
 
@@ -179,23 +179,25 @@ EOF
 exit 1
 }
 
-case $1 in
-    "--ignore-internet-check" )
-        dependencies
-    ;;
-    "--ignore-dependencies" )
-        internet_check
-    ;;
-    "--ignore-deps-internet-check" )
-        echo "" > /dev/null
-    ;;
-    "-h"|"--help" )
-        help_page
-    ;;
-    * )
-        internet_check
-        dependencies
-esac
+
+info "Downloading plisteditor.py..."
+curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
+add_plist() {
+    python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efi"/config.plist
+}
+
+set_plist() {
+    python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+}
+
+
+delete_plist() {
+    python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efi"/config.plist
+}
+
+change_plist() {
+    python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efi"/config.plist
+}
 
 OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
 LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
@@ -230,24 +232,215 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 #VIRTUALSMC_AMD_URL="url here"
 #VIRTUALSMC_AMD2_URL="url here"
 
-info "Downloading plisteditor.py..."
-curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
-add_plist() {
-    python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efi"/config.plist
+extras() {
+    check_folder_structure() {
+        local userpath="$1"
+
+        if [ -d "$userpath" ]; then
+            echo "" > /dev/null
+        else
+            echo "Base directory '$userpath' does not exist."
+            exit 1
+        fi
+
+        local folders=("BOOT" "OC" "OC/ACPI")
+        local kexts_dir="$userpath/OC/Kexts"
+        local drivers_dir="$userpath/OC/Drivers"
+
+        for folder in "${folders[@]}"; do
+            if [ ! -d "$userpath/$folder" ]; then
+                echo "Directory '$userpath/$folder' does not exist."
+                exit 1
+            fi
+        done
+
+        if [ -d "$kexts_dir" ] && [ "$(find "$kexts_dir" -name '*.kext' -print -quit)" ]; then
+            echo "" > /dev/null
+        else
+            echo "No .kext files found in '$kexts_dir'."
+            exit 1
+        fi
+
+        if [ -d "$drivers_dir" ] && [ "$(find "$drivers_dir" -name '*.efi' -print -quit)" ]; then
+            echo "" > /dev/null
+        else
+            echo "No .efi files found in '$drivers_dir'."
+            exit 1
+        fi
+        check_file() {
+            if [ -e "$1" ]; then
+                echo "" > /dev/null
+            else
+                echo "File '$1' does not exist."
+                exit 1
+            fi
+        }
+        check_file "$userpath/OC/config.plist"
+    }
+    efipath() {
+        echo ""
+        echo "################################################################"
+        echo "Where is your EFI folder?"
+        echo "################################################################"
+        read -r -p "Enter EFI folder path: " efipath
+        if [ -z "$efipath" ]; then
+            error "Invalid Path"
+            efipath
+        fi
+        check_folder_structure "$efipath"
+    }
+    oc_type() {
+        echo ""
+        echo "################################################################"
+        echo "What type of OpenCore do you have?"
+        echo "1. Release"
+        echo "2. Debug"
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " oc_type
+        case $oc_type in
+            1 )
+                oc_type="RELEASE"
+            ;;
+            2 )
+                oc_type="DEBUG"
+            ;;
+            * )
+                error "Invalid Choice"
+                oc_type
+            ;;
+        esac
+    }
+    oc_version() {
+        echo ""
+        echo "################################################################"
+        echo "What version of OpenCore do you have?"
+        echo "################################################################"
+        read -r -p "Enter OpenCore Version (ex 0.9.5): " oc_ver
+        if [[ "$oc_ver" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
+            oc_ver="$oc_ver"
+        else
+            error "Invalid Version"
+            oc_version
+        fi
+    }
+    add_plist() {
+        python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efipath"OC//config.plist
+    }
+
+    set_plist() {
+        python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efipath"/OC/config.plist
+    }
+
+
+    delete_plist() {
+        python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efipath"/OC/config.plist
+    }
+
+    change_plist() {
+        python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efipath"/OC/config.plist
+    }
+
+    opencanopy() {
+        info "Downloading OpenCanopy.efi for OpenCore $oc_ver $oc_type..."
+        opencore_url="https://github.com/acidanthera/OpenCorePkg/releases/download/$oc_ver/OpenCore-$oc_ver-$oc_type.zip"
+        response=$(curl -s -o /dev/null -w "%{http_code}" "$opencore_url")
+        if [ "$response" -eq 404 ]; then
+            error "The OpenCore URL could not be downloaded, this may be of an invalid opencore version, or a missing internet connection."
+            exit 1
+        fi
+        opencore_name="$dir/OpenCore-$oc_ver-$oc_type.zip"
+        curl -Ls "$opencore_url" -o "$opencore_name"
+        unzip -q "$dir"/OpenCore-"$oc_ver"-"$oc_type".zip -d "$dir"/OpenCore-"$oc_ver"-"$oc_type"
+        mv "$dir"/OpenCore-"$oc_ver"-"$oc_type"/X64/EFI/OC/Drivers/OpenCanopy.efi "$efipath"/OC/Drivers/OpenCanopy.efi
+        git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
+        python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
+        info "Downloading necessary OCBinaryData for themes..."
+        git clone -q https://github.com/acidanthera/OcBinaryData.git "$dir"/temp/OcBinaryData
+        rm -rf "$efipath"/OC/Resources
+        mv "$dir"/temp/OcBinaryData/Resources "$efipath"/OC/Resources
+        set_plist Misc.Boot.PickerMode string External
+        set_plist Misc.Boot.PickerAttributes number 17
+        pickervariant() {
+            echo "################################################################"
+            echo "What picker variant would you like?"
+            echo "1. Acidanthera\Syrah — Normal icon set."
+            echo "2. Acidanthera\GoldenGate — Modern icon set."
+            echo "3. Acidanthera\Chardonnay — Vintage icon set."
+            echo "################################################################"
+            read -r -p "Pick a number 1-2: " picker_variant
+            case $picker_variant in
+                1 )
+                    picker_variant="Acidanthera\Syrah"
+                ;;
+                2 )
+                    picker_variant="Acidanthera\GoldenGate"
+                ;;
+                3 )
+                    picker_variant="Acidanthera\Chardonnay"
+                ;;
+                * )
+                    error "Invalid Choice"
+                    pickervariant
+                ;;
+            esac
+        }
+        pickervariant
+        set_plist Misc.Boot.PickerVariant string "$picker_variant"
+        info "Done!"
+        info "Theme $picker_variant has been enabled."
+        exit 1
+    }
+    menu() {
+        echo "################################################################"
+        echo "Welcome to the extras menu."
+        echo "1. Enable OpenCanopy GUI boot picker"
+        echo "2."
+        echo "################################################################"
+        read -r -p "Pick a number 1-2: " extras_choice
+        case $extras_choice in
+            1 )
+                oc_version
+                oc_type
+                efipath
+                opencanopy
+            ;;
+            2 )
+                echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+                menu
+            ;;
+        esac
+    }
+    menu
 }
 
-set_plist() {
-    python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efi"/config.plist
-}
-
-
-delete_plist() {
-    python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efi"/config.plist
-}
-
-change_plist() {
-    python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efi"/config.plist
-}
+case $1 in
+    "--ignore-internet-check" )
+        dependencies
+    ;;
+    "--ignore-dependencies" )
+        internet_check
+    ;;
+    "--ignore-deps-internet-check" )
+        echo "" > /dev/null
+    ;;
+    "-h"|"--help" )
+        help_page
+    ;;
+    "--extras" )
+        extras
+    ;;
+    "" )
+        internet_check
+        dependencies
+    ;;
+    * )
+        error "Invalid arg $1"
+        exit 1
+    ;;  
+esac
 echo "################################################################"
 echo "Welcome to the OpenCore EFI Maker."
 echo "Made and maintained by Mac and the OpenCore Team."
@@ -466,9 +659,6 @@ esac
 }
 vsmcplugins
 
-
-
-
 ethernet() {
     echo "################################################################"
     echo "Next, we're going to need to ask you about hardware."
@@ -485,7 +675,7 @@ ethernet() {
     case $eth_choice in
         1 )
             INTEL_MAUSI_RELEASE_URL=$(curl -s "$INTEL_MAUSI_URL" | jq -r '.assets[] | select(.name | match("IntelMausi-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-
+             
             if [ -z "$INTEL_MAUSI_RELEASE_URL" ]; then
                 error "IntelMausi release URL not found, is GitHub rate-limiting you?"
                 exit 1
@@ -2542,7 +2732,7 @@ broadwell_laptop_config_setup() {
         4 )
             set_plist UEFI.APFS.MinVersion number 1412101001000000
             set_plist UEFI.APFS.MinDate number 20200306
-        ;;
+        ;;  
         5 )
             set_plist UEFI.APFS.MinVersion number 945275007000000
             set_plist UEFI.APFS.MinDate number 20190820
@@ -4192,7 +4382,7 @@ cpu_rev_desktop() {
     esac
 }
 
-case $pc_choice in # Mac note: i dont know why this makes shellcheck hang and memory leak
+case $pc_choice in 
     1 )
         cpu_rev_desktop
     ;;
