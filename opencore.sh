@@ -25,7 +25,7 @@ warning() {
 }
 clear
 internet_check() {
-    ping -c 1 -W 1 google.com > /dev/null 2>&1
+    ping -c 1 -W 1 g.com > /dev/null 2>&1
 
     if [ $? -eq 0 ]; then
         echo "" > /dev/null
@@ -173,7 +173,8 @@ Options:
     --ignore-internet-check      Ignores the internet check at the beginning of the script. Use this if you are 100% sure that you have internet.
     --ignore-dependencies        Ignores the dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed.
     --ignore-deps-internet-check Ignores both the internet and dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed and have internet.
-
+    --extras                     Opens the extras menu
+     
 Warning: This script is made for an elementary opencore EFI, if you want a stable hackintosh please follow the guide over at https://dortania.github.io/OpenCore-Install-Guide/
 EOF
 exit 1
