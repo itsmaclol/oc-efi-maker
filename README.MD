@@ -20,11 +20,13 @@ chmod +x ./opencore.sh
 This project was made for fun, and the EFI's that this script generates are only for testing purposes, if you want an actual stable hackintosh, please follow [the dortania guide](https://dortania.github.io/OpenCore-Install-Guide)
 
 ## Credits
-Apple for macOS
+[Apple](https://apple.com) for macOS
 
-Dortania for the OpenCore guide
+[Dortania](https://github.com/dortania) for the OpenCore guide
 
-acidanthera for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
+[acidanthera](https://github.com/acidanthera) for OpenCore, WhateverGreen, AppleALC, IntelMausi etc...
+
+[CorpNewt](https://github.com/corpnewt) for OCSnapshot
 
 & more...
 
