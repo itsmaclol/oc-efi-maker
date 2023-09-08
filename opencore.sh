@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
-
 os=$(uname)
-
 tmpdir=$(mktemp -d)
 dir=$tmpdir
 mkdir "$dir"/temp
+
+internet_check() {
+    ping -c 1 -W 1 google.com > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "" > /dev/null
+    else
+        error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
+        exit 1
+    fi
+}
 
 # Thanks to palera1n install.sh and to checkra1n for this coloring scheme!
 RED='\033[0;31m'
@@ -12,6 +21,56 @@ YELLOW='\033[0;33m'
 DARK_GRAY='\033[90m'
 LIGHT_CYAN='\033[0;96m'
 NO_COLOR='\033[0m'
+OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
+LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
+VIRTUALSMC_URL="https://api.github.com/repos/acidanthera/VirtualSMC/releases/latest"
+APPLEALC_URL="https://api.github.com/repos/acidanthera/AppleALC/releases/latest"
+INTEL_MAUSI_URL="https://api.github.com/repos/acidanthera/IntelMausi/releases/latest"
+APPLEIGB_URL="https://github.com/donatengit/AppleIGB/releases/download/v5.11/AppleIGB.kext.DEBUG.zip"   
+SMALLTREEINTEL82576_URL="https://github.com/khronokernel/SmallTree-I211-AT-patch/releases/download/1.3.0/SmallTreeIntel82576.kext.zip"
+ATHEROSE2200ETHERNET_URL="https://github.com/Mieze/AtherosE2200Ethernet/releases/download/2.2.2/AtherosE2200Ethernet-V2.2.2.zip"
+REALTEKRTL8111_URL="https://api.github.com/repos/Mieze/RTL8111_driver_for_OS_X/releases/latest"
+LUCYRTL8125ETHERNET_URL="https://api.github.com/repos/Mieze/LucyRTL8125Ethernet/releases/latest"
+USBTOOLBOX_KEXT_URL="https://api.github.com/repos/USBToolBox/kext/releases/latest"
+ITLWM_URL="https://api.github.com/repos/OpenIntelWireless/itlwm/releases/latest"
+AIRPORT_BRCM_URL="https://api.github.com/repos/acidanthera/AirportBrcmFixup/releases/latest"
+INTELBTFIRMWARE_URL="https://api.github.com/repos/OpenIntelWireless/IntelBluetoothFirmware/releases/latest"
+BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases/latest"
+NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
+VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
+WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releases/latest"
+CPUTSCSYNC_URL="https://api.github.com/repos/acidanthera/CpuTscSync/releases/latest"
+REALTEKCARDREADER_URL="https://api.github.com/repos/0xFireWolf/RealtekCardReader/releases/latest"
+REALTEKCARDREADERFRIEND_URL="https://api.github.com/repos/0xFireWolf/RealtekCardReaderFriend/releases/latest"
+SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
+SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
+SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
+SSDT_AWAC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml"
+SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml"
+SSDT_RHUB="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml"
+SSDT_CPUR="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml"
+SSDT_EC_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml"
+SSDT_PNLF="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml"
+SSDT_XOSI="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml"
+SSDT_EC_USBX_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml"
+SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml"
+curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
+add_plist() {
+    python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efi"/config.plist
+}
+
+set_plist() {
+    python3 "$dir"/temp/plisteditor.py set "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+}
+
+delete_plist() {
+    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
+}
+
+change_plist() {
+    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
+}
+
 error() {
     echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${RED}<Error>${NO_COLOR}: ${RED}$1${NO_COLOR}"
 }
@@ -24,16 +83,12 @@ warning() {
     echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${YELLOW}<Warning>${NO_COLOR}: ${YELLOW}$1${NO_COLOR}"
 }
 clear
+<<<<<<< HEAD
 internet_check() {
     ping -c 1 -W 1 g.com > /dev/null 2>&1
+=======
+>>>>>>> ce3c7df (Add Boot chime extras menu, Add kexts installation to extras menu, minor changes - Mac)
 
-    if [ $? -eq 0 ]; then
-        echo "" > /dev/null
-    else
-        error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
-        exit 1
-    fi
-}
 
 get_distribution() {
     if [ -f /etc/os-release ]; then
@@ -58,6 +113,7 @@ get_distribution() {
         VERSION="Unknown"
     fi
 }
+
 get_package_manager() {
     if command -v apt-get >/dev/null 2>&1; then
         PACKAGE_MANAGER="apt-get"
@@ -88,7 +144,7 @@ case $os in
             read -r -p "y/n: " install_brew
             case $install_brew in
                 y|Y|YES|Yes|yes )
-                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
                 ;;
                 n|N|No|NO|no )
                     error "Brew is needed to install dependencies"
@@ -180,59 +236,6 @@ EOF
 exit 1
 }
 
-
-info "Downloading plisteditor.py..."
-curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
-add_plist() {
-    python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efi"/config.plist
-}
-
-set_plist() {
-    python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efi"/config.plist
-}
-
-
-delete_plist() {
-    python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efi"/config.plist
-}
-
-change_plist() {
-    python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efi"/config.plist
-}
-
-OC_URL="https://api.github.com/repos/acidanthera/OpenCorePkg/releases/latest"
-LILU_URL="https://api.github.com/repos/acidanthera/Lilu/releases/latest"
-VIRTUALSMC_URL="https://api.github.com/repos/acidanthera/VirtualSMC/releases/latest"
-APPLEALC_URL="https://api.github.com/repos/acidanthera/AppleALC/releases/latest"
-INTEL_MAUSI_URL="https://api.github.com/repos/acidanthera/IntelMausi/releases/latest"
-APPLEIGB_URL="https://github.com/donatengit/AppleIGB/releases/download/v5.11/AppleIGB.kext.DEBUG.zip"   
-SMALLTREEINTEL82576_URL="https://github.com/khronokernel/SmallTree-I211-AT-patch/releases/download/1.3.0/SmallTreeIntel82576.kext.zip"
-ATHEROSE2200ETHERNET_URL="https://github.com/Mieze/AtherosE2200Ethernet/releases/download/2.2.2/AtherosE2200Ethernet-V2.2.2.zip"
-REALTEKRTL8111_URL="https://api.github.com/repos/Mieze/RTL8111_driver_for_OS_X/releases/latest"
-LUCYRTL8125ETHERNET_URL="https://api.github.com/repos/Mieze/LucyRTL8125Ethernet/releases/latest"
-USBTOOLBOX_KEXT_URL="https://api.github.com/repos/USBToolBox/kext/releases/latest"
-ITLWM_URL="https://api.github.com/repos/OpenIntelWireless/itlwm/releases/latest"
-AIRPORT_BRCM_URL="https://api.github.com/repos/acidanthera/AirportBrcmFixup/releases/latest"
-INTELBTFIRMWARE_URL="https://api.github.com/repos/OpenIntelWireless/IntelBluetoothFirmware/releases/latest"
-BRCMPATCHRAM_URL="https://api.github.com/repos/acidanthera/BrcmPatchRAM/releases/latest"
-NVMEFIX_URL="https://api.github.com/repos/acidanthera/NVMeFix/releases/latest"
-VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
-WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releases/latest"
-SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
-SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
-SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
-SSDT_AWAC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-AWAC.aml"
-SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PMC.aml"
-SSDT_RHUB="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RHUB.aml"
-SSDT_CPUR="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-CPUR.aml"
-SSDT_EC_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-LAPTOP.aml"
-SSDT_PNLF="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PNLF.aml"
-SSDT_XOSI="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml"
-SSDT_EC_USBX_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml"
-SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml"
-#VIRTUALSMC_AMD_URL="url here"
-#VIRTUALSMC_AMD2_URL="url here"
-
 extras() {
     check_folder_structure() {
         local userpath="$1"
@@ -318,27 +321,31 @@ extras() {
         echo "################################################################"
         read -r -p "Enter OpenCore Version (ex 0.9.5): " oc_ver
         if [[ "$oc_ver" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
-            oc_ver="$oc_ver"
+            if [[ "$oc_ver" < "0.5.7" ]]; then
+                error "OpenCore version must be 0.5.7 or higher for boot picker to work. Please update opencore."
+                exit 1
+            else
+                oc_ver="$oc_ver"
+            fi    
         else
             error "Invalid Version"
             oc_version
         fi
     }
-    add_plist() {
-        python3 "$dir"/temp/plisteditor.py add -s "$1" --type "$2" --path "$efipath"OC//config.plist
+    addplist() {
+        python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efipath"OC//config.plist
     }
 
-    set_plist() {
-        python3 "$dir"/temp/plisteditor.py set -s "$1" --type "$2" --value "$3" --path "$efipath"/OC/config.plist
+    setplist() {
+        python3 "$dir"/temp/plisteditor.py set "$1" --type "$2" --value "$3" --path "$efipath"/OC/config.plist
     }
 
-
-    delete_plist() {
-        python3 "$dir"/temp/plisteditor.py delete -s "$1" --path "$efipath"/OC/config.plist
+    deleteplist() {
+        python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efipath"/OC/config.plist
     }
 
-    change_plist() {
-        python3 "$dir"/temp/plisteditor.py change -s "$1" --new_type "$2" --path "$efipath"/OC/config.plist
+    changeplist() {
+        python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efipath"/OC/config.plist
     }
 
     opencanopy() {
@@ -359,8 +366,8 @@ extras() {
         git clone -q https://github.com/acidanthera/OcBinaryData.git "$dir"/temp/OcBinaryData
         rm -rf "$efipath"/OC/Resources
         mv "$dir"/temp/OcBinaryData/Resources "$efipath"/OC/Resources
-        set_plist Misc.Boot.PickerMode string External
-        set_plist Misc.Boot.PickerAttributes number 17
+        setplist Misc.Boot.PickerMode string External
+        setplist Misc.Boot.PickerAttributes number 17
         pickervariant() {
             echo "################################################################"
             echo "What picker variant would you like?"
@@ -386,16 +393,124 @@ extras() {
             esac
         }
         pickervariant
-        set_plist Misc.Boot.PickerVariant string "$picker_variant"
+        setplist Misc.Boot.PickerVariant string "$picker_variant"
         info "Done!"
         info "Theme $picker_variant has been enabled."
+        exit 1
+    }
+    audiodevice() {
+        echo ""
+        echo "################################################################" 
+        echo "Please enter the Device path (PciRoot) of your audio controller"
+        echo "Run /path/to/gfxutil -f HDEF to find it"
+        echo "An example of a device path is PciRoot(0x0)/Pci(0x1f,0x3)"
+        echo "################################################################"
+        read -r -p "Enter Device Path: " audiodevice
+        if [[ "$audiodevice" =~ ^PciRoot\(0x[0-9a-fA-F]+\)/Pci\(0x[0-9a-fA-F]+,0x[0-9a-fA-F]+\)$ ]]; then
+            audiodevice="$audiodevice"
+        else
+            error "$audiodevice is not a valid device path"
+            audiodevice
+        fi
+
+    }
+    bootchime() {
+        info "Downloading AudioDxe.efi for OpenCore $oc_ver $oc_type..."
+        opencore_url="https://github.com/acidanthera/OpenCorePkg/releases/download/$oc_ver/OpenCore-$oc_ver-$oc_type.zip"
+        response=$(curl -s -o /dev/null -w "%{http_code}" "$opencore_url")
+        if [ "$response" -eq 404 ]; then
+            error "The OpenCore URL could not be downloaded, this may be of an invalid opencore version, or a missing internet connection."
+            exit 1
+        fi
+        opencore_name="$dir/OpenCore-$oc_ver-$oc_type.zip"
+        curl -Ls "$opencore_url" -o "$opencore_name"
+        unzip -q "$dir"/OpenCore-"$oc_ver"-"$oc_type".zip -d "$dir"/OpenCore-"$oc_ver"-"$oc_type"
+        mv "$dir"/OpenCore-"$oc_ver"-"$oc_type"/X64/EFI/OC/Drivers/AudioDxe.efi "$efipath"/OC/Drivers/AudioDxe.efi
+        git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
+        python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
+        info "Downloading OCBinaryData..."
+        git clone -q https://github.com/acidanthera/OcBinaryData.git "$dir"/temp/OcBinaryData
+        rm -rf "$efipath"/OC/Resources
+        mv "$dir"/temp/OcBinaryData/Resources "$efipath"/OC/Resources
+        setplist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.SystemAudioVolume data 0x46
+        setplist UEFI.Audio.AudioCodec number 0
+        setplist UEFI.Audio.AudioDevice string "$audiodevice"
+        setplist UEFI.Audio.AudioOutMask number -1
+        setplist UEFI.Audio.AudioSupport bool True
+        setplist UEFI.Audio.DisconnectHda bool False
+        setplist UEFI.Audio.MaximumGain number -15
+        setplist UEFI.Audio.MinimumAssistGain number -30
+        setplist UEFI.Audio.MinimumAudibleGain number -55
+        setplist UEFI.Audio.PlayChime string Enabled
+        setplist UEFI.Audio.ResetTrafficClass bool False
+        setplist UEFI.Audio.SetupDelay number 0
+        warning "Some codecs many need extra time for setup, we recommend setting UEFI:Audio:SetupDelay to 500 milliseconds (0.5 seconds) if you have issues"
+        sleep 5
+        info "Done!"
+        info "Bootchime has been enabled."
+        exit 1
+    }
+    kexts() {
+        echo ""
+        echo "################################################################"
+        echo "What kexts would you like to install?"
+        echo "1. CpuTscSync"
+        echo "2. RealtekCardReader"
+        echo "################################################################"
+        read -r -p "Pick your kexts (ex 1 2): " kexts_choice
+        for option in $kexts_choice ; do
+        if [[ $option =~ ^[1-5]$ ]]; then
+            case $option in
+                1 )
+                    NAME="CpuTscSync" 
+                    CPUTSCSYNC_RELEASE_NUMBER=$(curl -s "$CPUTSCSYNC_URL" | jq -r '.tag_name')
+                    CPUTSCSYNC_RELEASE_URL=$(curl -s "$CPUTSCSYNC_URL" | jq -r '.assets[] | select(.name | match("CpuTscSync-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+                    if [ -z "$CPUTSCSYNC_RELEASE_URL" ]; then
+                        error "CpuTscSync Release URL not found, is GitHub rate-limiting you?"
+                        exit 1
+                    fi
+                    info "Downloading $NAME $CPUTSCSYNC_RELEASE_NUMBER..."
+                ;;
+                2 )
+                    REALTEKCARDREADER_RELEASE_NUMBER=$(curl -s "$REALTEKCARDREADER_URL" | jq -r '.tag_name')
+                    REALTEKCARDREADER_RELEASE_URL=$(curl -s "$REALTEKCARDREADER_URL" | jq -r '.assets[] | select(.name | contains("RealtekCardReader_") and contains("_RELEASE.zip")) | .browser_download_url')
+                    if [ -z "$REALTEKCARDREADER_RELEASE_URL" ]; then
+                        error "RealtekCardReader Release URL not found, is GitHub rate-limiting you?"
+                        exit 1
+                    fi
+                    info "Downloading RealtekCardReader $REALTEKCARDREADER_RELEASE_NUMBER..." 
+                    curl -Ls "$REALTEKCARDREADER_RELEASE_URL" -o "$dir"/temp/RealtekCardReader.zip
+                    unzip -q "$dir"/temp/RealtekCardReader.zip -d "$dir"/temp/RealtekCardReader
+                    mv "$dir"/temp/RealtekCardReader/RealtekCardReader.kext "$efipath"/OC/Kexts/RealtekCardReader.kext
+                    REALTEKCARDREADERFRIEND_RELEASE_URL=$(curl -s "$REALTEKCARDREADERFRIEND_URL" | jq -r '.assets[] | select(.name | contains("RealtekCardReaderFriend_") and contains("_RELEASE.zip")) | .browser_download_url')
+                    REALTEKCARDREADERFRIEND_RELEASE_NUMBER=$(curl -s "$REALTEKCARDREADERFRIEND_URL" | jq -r '.tag_name')
+                    if [ -z "$REALTEKCARDREADERFRIEND_RELEASE_URL" ]; then
+                        error "RealtekCardReaderFriend Release URL not found, is GitHub rate-limiting you?"
+                        exit 1
+                    fi
+                    info "Downloading RealtekCardReaderFriend $REALTEKCARDREADERFRIEND_RELEASE_NUMBER..."
+                    curl -Ls "$REALTEKCARDREADERFRIEND_RELEASE_URL" -o "$dir"/temp/RealtekCardReaderFriend.zip
+                    unzip -q "$dir"/temp/RealtekCardReaderFriend.zip -d "$dir"/temp/RealtekCardReaderFriend
+                    mv "$dir"/temp/RealtekCardReaderFriend/RealtekCardReaderFriend.kext "$efipath"/OC/Kexts/RealtekCardReaderFriend.kext
+                    git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
+                    python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
+
+                ;;
+            esac
+
+        else    
+            error "Invalid option: $option"
+            kexts
+        fi
+        done
         exit 1
     }
     menu() {
         echo "################################################################"
         echo "Welcome to the extras menu."
         echo "1. Enable OpenCanopy GUI boot picker"
-        echo "2."
+        echo "2. Enable Boot Chime"
+        echo "3. Install extra kexts"
         echo "################################################################"
         read -r -p "Pick a number 1-2: " extras_choice
         case $extras_choice in
@@ -406,7 +521,16 @@ extras() {
                 opencanopy
             ;;
             2 )
-                echo "" > /dev/null
+                oc_version
+                oc_type
+                efipath
+                audiodevice
+                bootchime
+
+            ;;
+            3 )
+                efipath
+                kexts
             ;;
             * )
                 error "Invalid Choice"
@@ -498,33 +622,33 @@ macos_choice(){
     echo "5: macOS Mojave"
     echo "Info: For any macOS lower than this, you will need to follow the guide yourself."
     echo "################################################################"
-    echo ""
     read -r -p "Pick a number 1-5: " os_choice
+    mkdir "$dir"/com.apple.recovery.boot
     case $os_choice in
         1 )
             os_name="Ventura"  
             info "Downloading macOS Ventura, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download   
+            python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-4B682C642B45593E -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         3 )
             os_name="BigSur"
             info "Downloading macOS Big Sur, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         4 )
             os_name="Catalina"
             info "Downloading macOS Catalina, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         5 )
             os_name="Mojave"
             info "Downloading macOS Mojave, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download
+            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download -o "$dir"/com.apple.recovery.boot
         ;;
         * )
             error "Invalid Choice"
@@ -537,7 +661,7 @@ info "Setting up EFI Folder Structure..."
 sleep 3
 efi="$dir"/EFI/EFI/OC
 mkdir -p "$efi"
-#cp -r "$dir"/Utilities/macrecovery/com.apple.recovery.boot "$dir"/EFI/com.apple.recovery.boot
+#cp -r "$dir"/com.apple.recovery.boot "$dir"/EFI/com.apple.recovery.boot
 cp -r "$dir"/X64/EFI/BOOT "$dir"/EFI/EFI/BOOT
 cp -r "$dir"/X64/EFI/OC/ACPI "$efi"/ACPI
 cp -r "$dir"/X64/EFI/OC/Kexts "$efi"/Kexts
@@ -551,6 +675,7 @@ mkdir "$efi"/Tools
 cp "$dir"/X64/EFI/OC/Tools/OpenShell.efi "$efi"/Tools/
 info "Downloading HfsPlus..."
 curl -Ls https://github.com/acidanthera/OcBinaryData/raw/master/Drivers/HfsPlus.efi -o "$efi"/Drivers/HfsPlus.efi
+
 LILU_RELEASE_URL=$(curl -s "$LILU_URL" | jq -r '.assets[] | select(.name | match("Lilu-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 if [ -z "$LILU_RELEASE_URL" ]; then
     error "Lilu release URL not found, is GitHub rate-limiting you?"
@@ -577,7 +702,6 @@ mv "$dir"/temp/VirtualSMC/Kexts/VirtualSMC.kext "$efi"/Kexts/VirtualSMC.kext
 
 
 APPLEALC_RELEASE_URL=$(curl -s "$APPLEALC_URL" | jq -r '.assets[] | select(.name | match("AppleALC-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-
 if [ -z "$APPLEALC_RELEASE_URL" ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
@@ -589,7 +713,6 @@ unzip -q "$dir"/temp/AppleALC.zip -d "$dir"/temp/AppleALC
 mv "$dir"/temp/AppleALC/AppleALC.kext "$efi"/Kexts/AppleALC.kext
 
 WHATEVERGREEN_RELEASE_URL=$(curl -s "$WHATEVERGREEN_URL" | jq -r '.assets[] | select(.name | match("WhateverGreen-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-
 if [ -z "$WHATEVERGREEN_RELEASE_URL" ]; then
     error "AppleALC release URL not found, is GitHub rate-limiting you?"
     exit 1
@@ -934,6 +1057,7 @@ laptop_input_screen() {
     echo "6. Atmel Multitouch Protocol"
     echo "7. Synaptics HID"
     echo "8. Alps HID" 
+    echo "9. None"
     echo "################################################################"
     read -r -p "Pick a number 1-8: " input_choice
 
@@ -1308,11 +1432,40 @@ delete_plist "#WARNING - 3"
 delete_plist "#WARNING - 4"
 delete_plist "DeviceProperties.Add.PciRoot(0x0)/Pci(0x1b,0x0)"
 
-# Mac note: fix adding arrays and children to arrays in the plist editor and finish amd kernel patches
-# amdkernelpatches() {
-#     delete_plist Kernel.Patch
-#     add_plist Kernel.Patch array
-# }
+amdkernelpatches() {
+    delete_plist Kernel.Patch
+    add_plist Kernel.Patch array
+    add_plist Kernel.Patch.0 dict
+    add_plist Kernel.Patch.0.Arch string
+    # set_plist Kernel.Patch.0.Arch string x86_64
+    # add_plist Kernel.Patch.0.Base string
+    # set_plist Kernel.Patch.0.Base string _cpuid_set_info
+    # add_plist Kernel.Patch.0.Comment string
+    # set_plist Kernel.Patch.0.Comment string "algrey | Force cpuid_cores_per_package to constant (user-specified) | 10.13-10.14"
+    # add_plist Kernel.Patch.0.Count number
+    # set_plist Kernel.Patch.0.Count number 1
+    # add_plist Kernel.Patch.0.Enabled bool
+    # set_plist Kernel.Patch.0.Enabled bool True
+    # add_plist Kernel.Patch.0.Find data
+    # set_plist Kernel.Patch.0.Find data C1E81A00 0000
+    # add_plist Kernel.Patch.0.Identifier string
+    # set_plist Kernel.Patch.0.Identifier string kernel
+    # add_plist Kernel.Patch.0.Limit number
+    # set_plist Kernel.Patch.0.Limit number 0
+    # add_plist Kernel.Patch.0.Mask data
+    # set_plist Kernel.Patch.0.Mask data FFFDFF00 0000
+    # add_plist Kernel.Patch.0.MaxKernel string
+    # set_plist Kernel.Patch.0.MaxKernel string 18.99.99
+    # add_plist Kernel.Patch.0.MinKernel string
+    # set_plist Kernel.Patch.0.MinKernel string 17.0.0
+    # add_plist Kernel.Patch.0.Replace data
+    # set_plist Kernel.Patch.0.Replace data B8000000 0000
+    # add_plist Kernel.Patch.0.ReplaceMask data
+    # set_plist Kernel.Patch.0.ReplaceMask data FFFFFFFF FF00
+    # add_plist Kernel.Patch.0.Skip number
+    # set_plist Kernel.Patch.0.Skip number 0
+}
+echo "$efi/config.plist"
 
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
@@ -1435,7 +1588,7 @@ ice_lake_laptop_config_setup() {
     set_plist Misc.Security.ScanPolicy number 0
     set_plist Misc.Security.SecureBootModel string Default
     set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1 -igfxcdc -igfxdvmt"
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1 -igfxcdc -igfxdvmt -igfxdbeo"
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
