@@ -83,11 +83,6 @@ warning() {
     echo -e " - [${DARK_GRAY}$(date +'%m/%d/%y %H:%M:%S')${NO_COLOR}] ${YELLOW}<Warning>${NO_COLOR}: ${YELLOW}$1${NO_COLOR}"
 }
 clear
-<<<<<<< HEAD
-internet_check() {
-    ping -c 1 -W 1 g.com > /dev/null 2>&1
-=======
->>>>>>> ce3c7df (Add Boot chime extras menu, Add kexts installation to extras menu, minor changes - Mac)
 
 
 get_distribution() {
@@ -229,8 +224,7 @@ Options:
     --ignore-internet-check      Ignores the internet check at the beginning of the script. Use this if you are 100% sure that you have internet.
     --ignore-dependencies        Ignores the dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed.
     --ignore-deps-internet-check Ignores both the internet and dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed and have internet.
-    --extras                     Opens the extras menu
-     
+
 Warning: This script is made for an elementary opencore EFI, if you want a stable hackintosh please follow the guide over at https://dortania.github.io/OpenCore-Install-Guide/
 EOF
 exit 1
@@ -622,6 +616,7 @@ macos_choice(){
     echo "5: macOS Mojave"
     echo "Info: For any macOS lower than this, you will need to follow the guide yourself."
     echo "################################################################"
+    echo ""
     read -r -p "Pick a number 1-5: " os_choice
     mkdir "$dir"/com.apple.recovery.boot
     case $os_choice in
