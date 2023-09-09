@@ -791,7 +791,7 @@ atiradeonplugins() {
     case $ati_radeon_plugins in
     y|Y|Yes|YES|yes )
         info "Downloading RadeonSensor, SMCRadeonGPU..."
-        RADEONSENSOR_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("RadeonMonitor-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+        RADEONSENSOR_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("RadeonSensor-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
         SMCRADEONGPU_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("SMCRadeonGPU-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
         if [ -z "$RADEONSENSOR_RELEASE_URL" ]; then
             error "RadeonSensor release URL not found, is GitHub rate-limiting you?"
@@ -816,6 +816,8 @@ atiradeonplugins() {
         atiradeonplugins
     ;;
 esac
+}
+
 case $vsmc_plugins in
     y|Y|YES|Yes|yes )
         case $os_choice in
@@ -825,7 +827,6 @@ case $vsmc_plugins in
         esac
     ;;
 esac
-}
 ethernet() {
     echo "################################################################"
     echo "Next, we're going to need to ask you about hardware."
@@ -1219,16 +1220,16 @@ brightnesskeys() {
     echo "################################################################"
     echo "Does this laptop have screen brightness keys?"
     echo "################################################################"
-    read -r -p "Pick a number 1-2: " brightness_choice
+    read -r -p "y/n " brightness_choice
     case $brightness_choice in
-        1 )
+        y|Y|YES|Yes|yes )
             info "Downloading BrightnessKeys..."
             BRIGHTNESSKEYS_RELEASE_URL=$(curl -s "$BRIGHTNESSKEYS_URL" | jq -r '.assets[] | select(.name | match("BrightnessKeys-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
             curl -Ls "$BRIGHTNESSKEYS_RELEASE_URL" -o "$dir"/temp/BrightnessKeys.zip
             unzip -q "$dir"/temp/BrightnessKeys.zip -d "$dir"/temp/BrightnessKeys
             mv "$dir"/temp/BrightnessKeys/BrightnessKeys.kext "$efi"/Kexts/BrightnessKeys.kext
         ;;
-        2 )
+        n|N|NO|No|no )
             echo "" > /dev/null
         ;;
         * )
