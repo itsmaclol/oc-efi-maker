@@ -42,6 +42,9 @@ WHATEVERGREEN_URL="https://api.github.com/repos/acidanthera/WhateverGreen/releas
 CPUTSCSYNC_URL="https://api.github.com/repos/acidanthera/CpuTscSync/releases/latest"
 REALTEKCARDREADER_URL="https://api.github.com/repos/0xFireWolf/RealtekCardReader/releases/latest"
 REALTEKCARDREADERFRIEND_URL="https://api.github.com/repos/0xFireWolf/RealtekCardReaderFriend/releases/latest"
+BRIGHTNESSKEYS_URL="https://api.github.com/repos/acidanthera/BrightnessKeys/releases/latest"
+ECENABLER_URL="https://api.github.com/repos/1Revenger1/ECEnabler/releases/latest"
+RADEONSENSOR_URL="https://api.github.com/repos/ChefKissInc/RadeonSensor/releases/latest"
 SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
 SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
 SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
@@ -54,6 +57,7 @@ SSDT_PNLF="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extr
 SSDT_XOSI="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml"
 SSDT_EC_USBX_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml"
 SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml"
+
 curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
 add_plist() {
     python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efi"/config.plist
@@ -778,6 +782,50 @@ esac
 }
 vsmcplugins
 
+atiradeonplugins() {
+    echo ""
+    echo "################################################################"
+    echo "Do you have a Radeon/ATI Graphics card?"
+    echo "################################################################"
+    read -r -p "y/n: " ati_radeon_plugins
+    case $ati_radeon_plugins in
+    y|Y|Yes|YES|yes )
+        info "Downloading RadeonSensor, SMCRadeonGPU..."
+        RADEONSENSOR_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("RadeonMonitor-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+        SMCRADEONGPU_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("SMCRadeonGPU-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+        if [ -z "$RADEONSENSOR_RELEASE_URL" ]; then
+            error "RadeonSensor release URL not found, is GitHub rate-limiting you?"
+            exit 1
+        fi
+        if [ -z "$SMCRADEONGPU_RELEASE_URL" ]; then
+            error "SMCRadeonGPU release URL not found, is GitHub rate-limiting you?"
+            exit 1
+        fi
+        curl -Ls "$RADEONSENSOR_RELEASE_URL" -o "$dir"/temp/RadeonSensor.zip
+        curl -Ls "$SMCRADEONGPU_RELEASE_URL" -o "$dir"/temp/SMCRadeonGPU.zip
+        unzip -q "$dir"/temp/RadeonSensor.zip -d "$dir"/temp/RadeonSensor
+        unzip -q "$dir"/temp/SMCRadeonGPU.zip -d "$dir"/temp/SMCRadeonGPU
+        mv "$dir"/temp/RadeonSensor/RadeonSensor.kext "$efi"/Kexts/RadeonSensor.kext
+        mv "$dir"/temp/SMCRadeonGPU/SMCRadeonGPU.kext "$efi"/Kexts/SMCRadeonGPU.kext
+    ;;
+    n|N|No|NO|no )
+        echo "" > /dev/null
+    ;;
+    * )
+        error "Invalid Choice"
+        atiradeonplugins
+    ;;
+esac
+case $vsmc_plugins in
+    y|Y|YES|Yes|yes )
+        case $os_choice in
+            1|2|3|4 )
+                atiradeonplugins
+            ;;
+        esac
+    ;;
+esac
+}
 ethernet() {
     echo "################################################################"
     echo "Next, we're going to need to ask you about hardware."
@@ -973,7 +1021,6 @@ bluetooth() {
     ;;
     2 )
         BRCMPATCHRAM_RELEASE_URL=$(curl -s "$BRCMPATCHRAM_URL" | jq -r '.assets | .[] | select(.name | endswith("-RELEASE.zip")) | .browser_download_url')
-
         if [ -z "$BRCMPATCHRAM_RELEASE_URL" ]; then
             error "BrcmPatchRAM release URL not found, is GitHub rate-limiting you?"
             exit 1
@@ -1002,6 +1049,23 @@ bluetooth() {
     * )
         error "Invalid Choice"
         bluetooth
+    ;;
+esac
+case $bt_choice in
+    1|2 )
+        case $os_choice in 
+            1|2 )
+                info "Downloading BlueToolFixup..."
+                BRCMPATCHRAM_RELEASE_URL=$(curl -s "$BRCMPATCHRAM_URL" | jq -r '.assets | .[] | select(.name | endswith("-RELEASE.zip")) | .browser_download_url')
+                if [ -z "$BRCMPATCHRAM_RELEASE_URL" ]; then
+                    error "BrcmPatchRAM release URL not found, is GitHub rate-limiting you?"
+                    exit 1
+                fi
+                curl -Ls "$BRCMPATCHRAM_RELEASE_URL" -o "$dir"/temp/BrcmPatchRAM.zip
+                unzip -q "$dir"/temp/BrcmPatchRAM.zip -d "$dir"/temp/BrcmPatchRAM
+                mv "$dir"/temp/BrcmPatchRAM/BlueToolFixup.kext "$efi"/Kexts/BlueToolFixup.kext
+            ;;
+        esac
     ;;
 esac
 }
@@ -1151,6 +1215,42 @@ case $pc_choice in
         laptop_input_screen
     ;;
 esac
+brightnesskeys() {
+    echo "################################################################"
+    echo "Does this laptop have screen brightness keys?"
+    echo "################################################################"
+    read -r -p "Pick a number 1-2: " brightness_choice
+    case $brightness_choice in
+        1 )
+            info "Downloading BrightnessKeys..."
+            BRIGHTNESSKEYS_RELEASE_URL=$(curl -s "$BRIGHTNESSKEYS_URL" | jq -r '.assets[] | select(.name | match("BrightnessKeys-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+            curl -Ls "$BRIGHTNESSKEYS_RELEASE_URL" -o "$dir"/temp/BrightnessKeys.zip
+            unzip -q "$dir"/temp/BrightnessKeys.zip -d "$dir"/temp/BrightnessKeys
+            mv "$dir"/temp/BrightnessKeys/BrightnessKeys.kext "$efi"/Kexts/BrightnessKeys.kext
+        ;;
+        2 )
+            echo "" > /dev/null
+        ;;
+        * )
+            error "Invalid Choice"
+            brightnesskeys
+        ;;
+    esac
+}
+case $pc_choice in
+    2 )
+        brightnesskeys
+    ;;
+esac
+ECENABLER_RELEASE_URL=$(curl -s "$ECENABLER_URL" | jq -r '.assets[] | select(.name | match("ECEnabler-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+if [ -z "$ECENABLER_RELEASE_URL" ]; then
+    error "ECEnabler release URL not found, is GitHub rate-limiting you?"
+    exit 1
+fi
+info "Downloading ECEnabler for reading battery precentages..."
+curl -Ls "$ECENABLER_RELEASE_URL" -o "$dir"/temp/ECEnabler.zip
+unzip -q "$dir"/temp/ECEnabler.zip -d "$dir"/temp/ECEnabler
+mv "$dir"/temp/ECEnabler/ECEnabler.kext "$efi"/Kexts/ECEnabler.kext
 
 acpi_laptop() {
     echo "################################################################"
