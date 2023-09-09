@@ -1242,16 +1242,19 @@ case $pc_choice in
         brightnesskeys
     ;;
 esac
-ECENABLER_RELEASE_URL=$(curl -s "$ECENABLER_URL" | jq -r '.assets[] | select(.name | match("ECEnabler-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-if [ -z "$ECENABLER_RELEASE_URL" ]; then
-    error "ECEnabler release URL not found, is GitHub rate-limiting you?"
-    exit 1
-fi
-info "Downloading ECEnabler for reading battery precentages..."
-curl -Ls "$ECENABLER_RELEASE_URL" -o "$dir"/temp/ECEnabler.zip
-unzip -q "$dir"/temp/ECEnabler.zip -d "$dir"/temp/ECEnabler
-mv "$dir"/temp/ECEnabler/ECEnabler.kext "$efi"/Kexts/ECEnabler.kext
-
+case $pc_choice in 
+    2 )
+        ECENABLER_RELEASE_URL=$(curl -s "$ECENABLER_URL" | jq -r '.assets[] | select(.name | match("ECEnabler-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+        if [ -z "$ECENABLER_RELEASE_URL" ]; then
+            error "ECEnabler release URL not found, is GitHub rate-limiting you?"
+            exit 1
+        fi
+        info "Downloading ECEnabler for reading battery precentages..."
+        curl -Ls "$ECENABLER_RELEASE_URL" -o "$dir"/temp/ECEnabler.zip
+        unzip -q "$dir"/temp/ECEnabler.zip -d "$dir"/temp/ECEnabler
+        mv "$dir"/temp/ECEnabler/ECEnabler.kext "$efi"/Kexts/ECEnabler.kext
+    ;;
+esac
 acpi_laptop() {
     echo "################################################################"
     echo "Now, we need to download ACPI"
