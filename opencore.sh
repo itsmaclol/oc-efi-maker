@@ -1536,36 +1536,36 @@ amdkernelpatches() {
     add_plist Kernel.Patch array
     add_plist Kernel.Patch.0 dict
     add_plist Kernel.Patch.0.Arch string
-    # set_plist Kernel.Patch.0.Arch string x86_64
-    # add_plist Kernel.Patch.0.Base string
-    # set_plist Kernel.Patch.0.Base string _cpuid_set_info
-    # add_plist Kernel.Patch.0.Comment string
-    # set_plist Kernel.Patch.0.Comment string "algrey | Force cpuid_cores_per_package to constant (user-specified) | 10.13-10.14"
-    # add_plist Kernel.Patch.0.Count number
-    # set_plist Kernel.Patch.0.Count number 1
-    # add_plist Kernel.Patch.0.Enabled bool
-    # set_plist Kernel.Patch.0.Enabled bool True
-    # add_plist Kernel.Patch.0.Find data
-    # set_plist Kernel.Patch.0.Find data C1E81A00 0000
-    # add_plist Kernel.Patch.0.Identifier string
-    # set_plist Kernel.Patch.0.Identifier string kernel
-    # add_plist Kernel.Patch.0.Limit number
-    # set_plist Kernel.Patch.0.Limit number 0
-    # add_plist Kernel.Patch.0.Mask data
-    # set_plist Kernel.Patch.0.Mask data FFFDFF00 0000
-    # add_plist Kernel.Patch.0.MaxKernel string
-    # set_plist Kernel.Patch.0.MaxKernel string 18.99.99
-    # add_plist Kernel.Patch.0.MinKernel string
-    # set_plist Kernel.Patch.0.MinKernel string 17.0.0
-    # add_plist Kernel.Patch.0.Replace data
-    # set_plist Kernel.Patch.0.Replace data B8000000 0000
-    # add_plist Kernel.Patch.0.ReplaceMask data
-    # set_plist Kernel.Patch.0.ReplaceMask data FFFFFFFF FF00
-    # add_plist Kernel.Patch.0.Skip number
-    # set_plist Kernel.Patch.0.Skip number 0
+    set_plist Kernel.Patch.0.Arch string x86_64
+    add_plist Kernel.Patch.0.Base string
+    set_plist Kernel.Patch.0.Base string _cpuid_set_info
+    add_plist Kernel.Patch.0.Comment string
+    set_plist Kernel.Patch.0.Comment string "algrey | Force cpuid_cores_per_package to constant (user-specified) | 10.13-10.14"
+    add_plist Kernel.Patch.0.Count number
+    set_plist Kernel.Patch.0.Count number 1
+    add_plist Kernel.Patch.0.Enabled bool
+    set_plist Kernel.Patch.0.Enabled bool True
+    add_plist Kernel.Patch.0.Find data
+    set_plist Kernel.Patch.0.Find data C1E81A00 0000
+    add_plist Kernel.Patch.0.Identifier string
+    set_plist Kernel.Patch.0.Identifier string kernel
+    add_plist Kernel.Patch.0.Limit number
+    set_plist Kernel.Patch.0.Limit number 0
+    add_plist Kernel.Patch.0.Mask data
+    set_plist Kernel.Patch.0.Mask data FFFDFF00 0000
+    add_plist Kernel.Patch.0.MaxKernel string
+    set_plist Kernel.Patch.0.MaxKernel string 18.99.99
+    add_plist Kernel.Patch.0.MinKernel string
+    set_plist Kernel.Patch.0.MinKernel string 17.0.0
+    add_plist Kernel.Patch.0.Replace data
+    set_plist Kernel.Patch.0.Replace data B8000000 0000
+    add_plist Kernel.Patch.0.ReplaceMask data
+    set_plist Kernel.Patch.0.ReplaceMask data FFFFFFFF FF00
+    add_plist Kernel.Patch.0.Skip number
+    set_plist Kernel.Patch.0.Skip number 0
 }
 echo "$efi/config.plist"
-
+amdkernelpatches
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
