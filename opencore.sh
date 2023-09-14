@@ -2,20 +2,6 @@
 os=$(uname)
 tmpdir=$(mktemp -d)
 dir=$tmpdir
-mkdir "$dir"/temp
-
-internet_check() {
-    ping -c 1 -W 1 google.com > /dev/null 2>&1
-
-    if [ $? -eq 0 ]; then
-        echo "" > /dev/null
-    else
-        error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
-        exit 1
-    fi
-}
-
-# Thanks to palera1n install.sh and to checkra1n for this coloring scheme!
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
 DARK_GRAY='\033[90m'
@@ -57,8 +43,21 @@ SSDT_PNLF="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extr
 SSDT_XOSI="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-XOSI.aml"
 SSDT_EC_USBX_LAPTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-LAPTOP.aml"
 SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-PMC.aml"
+PLISTEDITOR_URL="https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py"
+mkdir "$dir"/temp
 
-curl -Ls https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py -o "$dir"/temp/plisteditor.py
+internet_check() {
+    ping -c 1 -W 1 google.com > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "" > /dev/null
+    else
+        error "You do not seem to have an internet connection, please connect to the internet and try again, or if you are completely sure that you have internet, use the --ignore-internet-check flag."
+        exit 1
+    fi
+}
+
+curl -Ls "$PLISTEDITOR_URL" -o "$dir"/temp/plisteditor.py
 add_plist() {
     python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efi"/config.plist
 }
@@ -925,7 +924,7 @@ ethernet
 echo ""
 echo "################################################################"
 echo "Next, we'll continue with USB."
-echo "For this, we are going to use USBToolBox"
+echo "For this, we are going to use USBToolBox/USBMap"
 echo "This script will automatically install the USBToolBox Kext, but the UTBToolMap will have to be made manually"
 echo "You will need to run the USBToolBox application and make the kext manually"
 echo "After you do that, you will need to put it into the EFI/EFI/OC/Kexts directory and then"
@@ -2210,8 +2209,25 @@ amdkernelpatches() {
     add_plist Kernel.Patch.21.Skip int
     set_plist Kernel.Patch.21.Skip int 0
 }
-echo "$efi/config.plist"
-amdkernelpatches
+macserial() {
+    case $os in
+        Linux )
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+}
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -2356,23 +2372,7 @@ ice_lake_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -2594,23 +2594,7 @@ coffelakeplus_cometlake_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -2830,23 +2814,7 @@ coffee_whiskeylake_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -3047,23 +3015,7 @@ kabylake_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -3391,23 +3343,7 @@ skylake_laptop_config_setup() {
         ;;
     esac
 
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -3610,23 +3546,7 @@ broadwell_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -3844,23 +3764,7 @@ haswell_laptop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -4060,23 +3964,7 @@ haswell_broadwell_desktop_config_setup() {
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -4301,23 +4189,7 @@ skylake_desktop_config_setup() {
             smbiosname="iMac17,1"
         ;;
     esac
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -4483,23 +4355,7 @@ kabylake_desktop_config_setup(){
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -4687,23 +4543,7 @@ coffeelake_desktop_config_setup() {
     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
     # gpu args go here
     smbiosname=iMac19,1
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -4899,23 +4739,7 @@ cometlake_desktop_config_setup(){
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-            chmod +x "$dir"/Utilities/macserial/macserial.linux
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-        ;;
-        Darwin )
-            chmod +x "$dir"/Utilities/macserial/macserial
-            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-        ;;
-    esac
-    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-    UUID=$(uuidgen)
-    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-    set_plist PlatformInfo.Generic.MLB string "$MLB"
-    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    macserial
     case $os_choice in
         4 )
             set_plist UEFI.APFS.MinVersion int 1412101001000000
@@ -5148,23 +4972,7 @@ cometlake_desktop_config_setup(){
 #         esac
 #     }
 #     platforminfo
-#     case $os in
-#         Linux )
-#             chmod +x "$dir"/Utilities/macserial/macserial.linux
-#             smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-#         ;;
-#         Darwin )
-#             chmod +x "$dir"/Utilities/macserial/macserial
-#             smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-#         ;;
-#     esac
-#     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-#     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-#     UUID=$(uuidgen)
-#     set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-#     set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-#     set_plist PlatformInfo.Generic.MLB string "$MLB"
-#     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+#     macserial
 #     case $os_choice in
 #         4 )
 #             set_plist UEFI.APFS.MinVersion int 1412101001000000
