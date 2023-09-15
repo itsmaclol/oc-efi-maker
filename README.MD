@@ -27,6 +27,10 @@ opencore.bat
 # Please Read!
 This project was made for fun, and the EFI's that this script generates are only for testing purposes, if you want an actual stable hackintosh, please follow [the dortania guide](https://dortania.github.io/OpenCore-Install-Guide)
 
+## Discord
+If you encounter any problem using the script, Use [this](https://discord.gg/DKcuujJ6nt) invite link - This is our main Support server, And thank you for taking the time to use the script...
+You can also suggest what things to add instead of opening an issue, Your call!!!
+
 ## Credits
 [Apple](https://www.apple.com) for macOS
 
