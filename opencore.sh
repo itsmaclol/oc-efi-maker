@@ -46,6 +46,7 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 SSDT_RTC0_RANGE_HEDT="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-RTC0-RANGE-HEDT.aml"
 SSDT_UNC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-UNC.aml"
 PLISTEDITOR_URL="https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py"
+XLNCUSBFIX_URL="https://cdn.discordapp.com/attachments/566705665616117760/566728101292408877/XLNCUSBFix.kext.zip"
 mkdir "$dir"/temp
 
 internet_check() {
@@ -4921,155 +4922,154 @@ amd1516_desktop_config_setup(){
     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
 }
 
-# amd1719_desktop_config_setup(){
-#     trx40(){
-#         echo "################################################################"
-#         echo "Do you have a TRx40 system?"
-#         echo "################################################################"
-#         read -r -p "y/n: " trx40_choice
-#         case $trx40_choice in
-#             Y|y|YES|Yes|yes )
-#                 echo "" > /dev/null
-#             ;;
-#             n|N|NO|No|no )
-#                 set_plist Booter.Quirks.DevirtualizeMmio bool True
-#             ;;
-#             * )
-#                 error "Invalid Choice"
-#                 trx40
-#             esac
-#     }
-#     trx40
-#     set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
-#     resizegpu(){
-#         echo "################################################################"
-#         echo "Does your GPU support Resizeable BAR?"
-#         echo "################################################################"
-#         read -r -p "y/n: " resizegpu_choice
-#         case $resizegpu_choice in
-#             Y|y|YES|Yes|yes )
-#                 set_plist Booter.Quirks.ResizeAppleGpuBars int 1
-#             ;;
-#             n|N|NO|No|no )
-#                 set_plist Booter.Quirks.ResizeAppleGpuBars int -1
-#             ;;
-#             * )
-#                 error "Invalid Choice"
-#                 resizegpu
-#             esac
-#     }
-#     resizegpu
-#     set_plist Booter.Quirks.SetupVirtualMap bool True
-#     set_plist Booter.Quirks.SyncRuntimePermissions bool True
-#     set_plist Kernel.Emulate.DummyPowerManagement bool True
-#     # kernel patch start
-#     set_plist Kernel.Quirks.PanicNoKextDump bool True
-#     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-#     set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
-#     case $os_choice in
-#         4|5 ) 
-#              set_plist Kernel.Quirks.XhciPortLimit bool False
-#         ;;
-#     esac
-#     set_plist Misc.Debug.AppleDebug bool True
-#     set_plist Misc.Debug.ApplePanic bool True
-#     set_plist Misc.Debug.DisableWatchDog bool True
-#     set_plist Misc.Debug.Target int 67
-#     set_plist Misc.Security.AllowSetDefault bool True
-#     set_plist Misc.Security.BlacklistAppleUpdate bool True
-#     set_plist Misc.Security.ScanPolicy int 0
-#     set_plist Misc.Security.SecureBootModel string Default
-#     set_plist Misc.Security.Vault string Optional
-#     set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
-#     # gpu args go here
-#     platforminfo(){
-#         echo "################################################################"
-#         echo "Now, we need to pick an SMBIOS."
-#         echo "Pick the closest one to your hardware"
-#         echo "1. MacPro7,1 - AMD Polaris and newer"
-#         echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
-#         echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
-#         echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
-#         echo "################################################################"
-#         read -r -p "Choose a number between 1-4: " smbios_choice
-#         case $smbios_choice in
-#             1 )
-#                case $os_choice in
-#                     5 )
-#                          error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
-#                          platforminfo
-#                     ;;
-#                     * )
-#                        smbiosname=MacPro7,1
-#                     ;;
-#                 esac
-#             ;;
-#             2 )
-#                smbiosname=iMacPro1,1
-#             ;;
-#             3 )
-#                smbiosname=iMac14,2
-#             ;;
-#             4 )
-#                smbiosname=MacPro6,1
-#             ;;
-#             * )
-#                error "Invalid Choice"
-#                platforminfo
-#             ;;
-#         esac
-#     }
-#     platforminfo
-#     case $os in
-#         Linux )
-#             chmod +x "$dir"/Utilities/macserial/macserial.linux
-#             smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-#         ;;
-#         Darwin )
-#             chmod +x "$dir"/Utilities/macserial/macserial
-#             smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-#         ;;
-#     esac
-#     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-#     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-#     UUID=$(uuidgen)
-#     set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-#     set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-#     set_plist PlatformInfo.Generic.MLB string "$MLB"
-#     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
-#     case $os_choice in
-#         4 )
-#             set_plist UEFI.APFS.MinVersion int 1412101001000000
-#             set_plist UEFI.APFS.MinDate int 20200306
-#         ;;
-#         5 )
-#             set_plist UEFI.APFS.MinVersion int 945275007000000
-#             set_plist UEFI.APFS.MinDate int 20190820
-#         ;;
-#     esac
-#     hpdesktop(){
-#         echo "################################################################"
-#         echo "Do you have a HP System?"
-#         echo "################################################################"
-#         read -r -p "y/n: " hpdesktop_choice
-#         case $hpdesktop_choice in
-#             Y|y|YES|Yes|yes )
-#                 set_plist UEFI.Quirks.UnblockFsConnect bool True
-#             ;;
-#             n|N|NO|No|no )
-#                 echo "" > /dev/null
-#             ;;
-#             * )
-#                 error "Invalid Choice"
-#                 hpdesktop
-#             esac
-#     }
-#     hpdesktop
-#     info "Done!"
-#     info "Your EFI is located at $dir/EFI"
-#     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
-#     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
-# }
+amd1719_desktop_config_setup(){
+    trx40(){
+        echo "################################################################"
+        echo "Do you have a TRx40 system?"
+        echo "################################################################"
+        read -r -p "y/n: " trx40_choice
+        case $trx40_choice in
+            Y|y|YES|Yes|yes )
+                echo "" > /dev/null
+            ;;
+            n|N|NO|No|no )
+                set_plist Booter.Quirks.DevirtualizeMmio bool True
+            ;;
+            * )
+                error "Invalid Choice"
+                trx40
+            esac
+    }
+    trx40
+    set_plist Booter.Quirks.RebuildAppleMemoryMap bool True
+    resizegpu(){
+        echo "################################################################"
+        echo "Does your GPU support Resizeable BAR?"
+        echo "################################################################"
+        read -r -p "y/n: " resizegpu_choice
+        case $resizegpu_choice in
+            Y|y|YES|Yes|yes )
+                set_plist Booter.Quirks.ResizeAppleGpuBars int 1
+            ;;
+            n|N|NO|No|no )
+                set_plist Booter.Quirks.ResizeAppleGpuBars int -1
+            ;;
+            * )
+                error "Invalid Choice"
+                resizegpu
+            esac
+    }
+    resizegpu
+    set_plist Booter.Quirks.SetupVirtualMap bool True
+    set_plist Booter.Quirks.SyncRuntimePermissions bool True
+    set_plist Kernel.Emulate.DummyPowerManagement bool True
+    # kernel patch start
+    set_plist Kernel.Quirks.PanicNoKextDump bool True
+    set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
+    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+    case $os_choice in
+        4|5 ) 
+            set_plist Kernel.Quirks.XhciPortLimit bool False
+        ;;
+    esac
+    set_plist Misc.Debug.AppleDebug bool True
+    set_plist Misc.Debug.ApplePanic bool True
+    set_plist Misc.Debug.DisableWatchDog bool True
+    set_plist Misc.Debug.Target int 67
+    set_plist Misc.Security.AllowSetDefault bool True
+    set_plist Misc.Security.BlacklistAppleUpdate bool True
+    set_plist Misc.Security.ScanPolicy int 0
+    set_plist Misc.Security.SecureBootModel string Default
+    set_plist Misc.Security.Vault string Optional
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    # gpu args go here
+    platforminfo(){
+        echo "################################################################"
+        echo "Now, we need to pick an SMBIOS."
+        echo "Pick the closest one to your hardware"
+        echo "1. MacPro7,1 - AMD Polaris and newer"
+        echo "2. iMacPro1,1 - NVIDIA Maxwell and Pascal or AMD Polaris and newer"
+        echo "3. iMac14,2 - NVIDIA Maxwell and Pascal"
+        echo "4. MacPro6,1 - AMD GCN GPUs (supported HD and R5/R7/R9 series)"
+        echo "################################################################"
+        read -r -p "Choose a number between 1-4: " smbios_choice
+        case $smbios_choice in
+            1 )
+                case $os_choice in
+                    5 )
+                        error "This SMBIOS is only supported in macOS Catalina and higher! Please pick another."
+                        platforminfo
+                    ;;
+                    * )
+                        smbiosname=MacPro7,1
+                    ;;
+                esac
+            ;;
+            2 )
+               smbiosname=iMacPro1,1
+            ;;
+            3 )
+                smbiosname=iMac14,2
+            ;;
+            4 )
+                smbiosname=MacPro6,1
+            ;;
+            * )
+                error "Invalid Choice"
+                platforminfo
+            ;;
+        esac
+    }
+    platforminfo
+    case $os in
+        Linux )
+            chmod +x "$dir"/Utilities/macserial/macserial.linux
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
+        ;;
+        Darwin )
+            chmod +x "$dir"/Utilities/macserial/macserial
+            smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
+        ;;
+    esac
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    case $os_choice in
+        4 )
+            set_plist UEFI.APFS.MinVersion int 1412101001000000
+            set_plist UEFI.APFS.MinDate int 20200306
+        ;;
+        5 )
+            set_plist UEFI.APFS.MinVersion int 945275007000000
+            set_plist UEFI.APFS.MinDate int 20190820
+        ;;
+    esac
+    hpdesktop(){
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist UEFI.Quirks.UnblockFsConnect bool True
+            ;;
+            n|N|NO|No|no )
+                echo "" > /dev/null
+            ;;            * )
+                error "Invalid Choice"
+                hpdesktop
+            esac
+    }
+    hpdesktop
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+    warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
+}
 
 cpu_rev_laptop() {
     echo "################################################################"
