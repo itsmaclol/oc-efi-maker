@@ -1367,19 +1367,6 @@ case $pc_choice in
         esac
 esac
 
-case $pc_choice in
-    3 )
-            echo "################################################################"
-            echo "We'll need to ask you this question for gathering ACPI files."
-            echo "Do you have a B550 or A520 series motherboard?"
-            echo "################################################################"
-            read -r -p "y/n: " am5desktop_choice
-            ;;
-        esac
-    ;;
-esac
-
-
 am5mb() {
     echo "################################################################"
     echo "We'll need to ask you this question for gathering ACPI files."
@@ -1405,6 +1392,9 @@ case $pc_choice in
     3 )
        case $acpidesktop_choice in
            4 )
+                am5mb
+            ;;
+            6 )
                 am5mb
             ;;
         esac
