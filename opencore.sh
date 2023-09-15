@@ -46,7 +46,8 @@ SSDT_PMC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extr
 SSDT_RTC0_RANGE_HEDT="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-RTC0-RANGE-HEDT.aml"
 SSDT_UNC="https://github.com/dortania/Getting-Started-With-ACPI/blob/master/extra-files/compiled/SSDT-UNC.aml"
 PLISTEDITOR_URL="https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py"
-XLNCUSBFIX_URL="https://cdn.discordapp.com/attachments/566705665616117760/566728101292408877/XLNCUSBFix.kext.zip"
+SSDT_RTC0_RANGE_HEDT="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-RTC0-RANGE-HEDT.aml"
+SSDT_UNC="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-UNC.aml"
 mkdir "$dir"/temp
 
 internet_check() {
@@ -512,7 +513,7 @@ extras() {
         echo "2. Enable Boot Chime"
         echo "3. Install extra kexts"
         echo "################################################################"
-        read -r -p "Pick a number 1-2: " extras_choice
+        read -r -p "Pick a number 1-3: " extras_choice
         case $extras_choice in
             1 )
                 oc_version
@@ -579,7 +580,7 @@ opencore() {
     echo "1. RELEASE"
     echo "2. DEBUG"
     echo "################################################################"
-    read -r -p "1 or 2: " oc_choice
+    read -r -p "Pick a number 1 or 2: " oc_choice
 
     OC_RELEASE_NUMBER=$(curl -s "$OC_URL" | jq -r '.tag_name')
     RELEASE_URL=$(curl -s "$OC_URL" | jq -r '.assets[] | select(.name | match("OpenCore-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
@@ -615,11 +616,11 @@ macos_choice(){
     echo ""
     echo "################################################################"
     echo "Next, for the macOS Version."
-    echo "1: macOS Ventura"
-    echo "2: macOS Monterey"
-    echo "3: macOS Big Sur"
-    echo "4: macOS Catalina"
-    echo "5: macOS Mojave"
+    echo "1: macOS 13 Ventura"
+    echo "2: macOS 12 Monterey"
+    echo "3: macOS 11 Big Sur"
+    echo "4: macOS 10.15 Catalina"
+    echo "5: macOS 10.14 Mojave"
     echo "Info: For any macOS lower than this, you will need to follow the guide yourself."
     echo "################################################################"
     echo ""
@@ -734,7 +735,7 @@ pc() {
     echo "1. Desktop"
     echo "2. Laptop"
     echo "################################################################"
-    read -r -p "1 or 2: " pc_choice 
+    read -r -p "Pick a number 1 or 2: " pc_choice 
     case $pc_choice in
         1 )
             echo "" > /dev/null
@@ -791,33 +792,33 @@ atiradeonplugins() {
     echo "################################################################"
     read -r -p "y/n: " ati_radeon_plugins
     case $ati_radeon_plugins in
-    y|Y|Yes|YES|yes )
-        info "Downloading RadeonSensor, SMCRadeonGPU..."
-        RADEONSENSOR_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("RadeonSensor-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-        SMCRADEONGPU_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("SMCRadeonGPU-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
-        if [ -z "$RADEONSENSOR_RELEASE_URL" ]; then
-            error "RadeonSensor release URL not found, is GitHub rate-limiting you?"
-            exit 1
-        fi
-        if [ -z "$SMCRADEONGPU_RELEASE_URL" ]; then
-            error "SMCRadeonGPU release URL not found, is GitHub rate-limiting you?"
-            exit 1
-        fi
-        curl -Ls "$RADEONSENSOR_RELEASE_URL" -o "$dir"/temp/RadeonSensor.zip
-        curl -Ls "$SMCRADEONGPU_RELEASE_URL" -o "$dir"/temp/SMCRadeonGPU.zip
-        unzip -q "$dir"/temp/RadeonSensor.zip -d "$dir"/temp/RadeonSensor
-        unzip -q "$dir"/temp/SMCRadeonGPU.zip -d "$dir"/temp/SMCRadeonGPU
-        mv "$dir"/temp/RadeonSensor/RadeonSensor.kext "$efi"/Kexts/RadeonSensor.kext
-        mv "$dir"/temp/SMCRadeonGPU/SMCRadeonGPU.kext "$efi"/Kexts/SMCRadeonGPU.kext
-    ;;
-    n|N|No|NO|no )
-        echo "" > /dev/null
-    ;;
-    * )
-        error "Invalid Choice"
-        atiradeonplugins
-    ;;
-esac
+        y|Y|Yes|YES|yes )
+            info "Downloading RadeonSensor, SMCRadeonGPU..."
+            RADEONSENSOR_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("RadeonSensor-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+            SMCRADEONGPU_RELEASE_URL=$(curl -s "$RADEONSENSOR_URL" | jq -r '.assets[] | select(.name | match("SMCRadeonGPU-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+            if [ -z "$RADEONSENSOR_RELEASE_URL" ]; then
+                error "RadeonSensor release URL not found, is GitHub rate-limiting you?"
+                exit 1
+            fi
+            if [ -z "$SMCRADEONGPU_RELEASE_URL" ]; then
+                error "SMCRadeonGPU release URL not found, is GitHub rate-limiting you?"
+                exit 1
+            fi
+            curl -Ls "$RADEONSENSOR_RELEASE_URL" -o "$dir"/temp/RadeonSensor.zip
+            curl -Ls "$SMCRADEONGPU_RELEASE_URL" -o "$dir"/temp/SMCRadeonGPU.zip
+            unzip -q "$dir"/temp/RadeonSensor.zip -d "$dir"/temp/RadeonSensor
+            unzip -q "$dir"/temp/SMCRadeonGPU.zip -d "$dir"/temp/SMCRadeonGPU
+            mv "$dir"/temp/RadeonSensor/RadeonSensor.kext "$efi"/Kexts/RadeonSensor.kext
+            mv "$dir"/temp/SMCRadeonGPU/SMCRadeonGPU.kext "$efi"/Kexts/SMCRadeonGPU.kext
+        ;;
+        n|N|No|NO|no )
+            echo "" > /dev/null
+        ;;
+        * )
+            error "Invalid Choice"
+            atiradeonplugins
+        ;;
+    esac
 }
 
 case $vsmc_plugins in
@@ -841,7 +842,7 @@ ethernet() {
     echo "6. LucyRTL8125Ethernet (For Realtek's 2.5Gb Ethernet) Requires macOS 10.15 or newer"
     echo "7. No Ethernet"
     echo "################################################################"
-    read -r -p "Pick a number 1-6: " eth_choice
+    read -r -p "Pick a number 1-7: " eth_choice
     case $eth_choice in
         1 )
             INTEL_MAUSI_RELEASE_URL=$(curl -s "$INTEL_MAUSI_URL" | jq -r '.assets[] | select(.name | match("IntelMausi-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
@@ -955,7 +956,7 @@ wifi() {
     echo "3. None"
     echo "Info: For now, these are the only Wi-Fi brands that are supported by hackintoshing."
     echo "################################################################"
-    read -r -p "Enter a number 1-3: " wifi_choice
+    read -r -p "Pick a number 1-3: " wifi_choice
     echo ""
     case $wifi_choice in
     1 )
@@ -1003,7 +1004,8 @@ bluetooth() {
     echo "2. Broadcom"
     echo "3. None"
     echo "################################################################"
-    read -r -p "Enter a number 1-3: " bt_choice
+    read -r -p "Pick a number 1-3: " bt_choice
+    echo ""
     case $bt_choice in
     1 )
         INTELBTFIRMWARE_RELEASE_URL=$(curl -s "$INTELBTFIRMWARE_URL" | jq -r '.assets[] | select(.name | match("IntelBluetooth-v[0-9]\\.[0-9]\\.[0-9]")) | .browser_download_url')
@@ -1121,7 +1123,7 @@ laptop_input_screen() {
     echo "8. Alps HID" 
     echo "9. None"
     echo "################################################################"
-    read -r -p "Pick a number 1-8: " input_choice
+    read -r -p "Pick a number 1-9: " input_choice
 
     VOODOOPS2_URL="https://api.github.com/repos/acidanthera/VoodooPS2/releases/latest"
     VOODOOPS2_RELEASE_URL=$(curl -s "$VOODOOPS2_URL" | jq -r '.assets[] | select(.name | match("VoodooPS2Controller-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
@@ -1222,7 +1224,7 @@ brightnesskeys() {
     echo "################################################################"
     echo "Does this laptop have screen brightness keys?"
     echo "################################################################"
-    read -r -p "y/n " brightness_choice
+    read -r -p "y/n: " brightness_choice
     case $brightness_choice in
         y|Y|YES|Yes|yes )
             info "Downloading BrightnessKeys..."
@@ -1278,16 +1280,16 @@ acpi_desktop() {
     echo "4. Comet Lake"
     echo "5. Bulldozer(15h) and Jaguar(16h)"
     echo "6. Ryzen and Threadripper(17h and 19h)"
+    echo "7. Other (Server systems, HEDT, etc)"
     echo "################################################################"
-    read -r -p "Pick a number 1-6: " acpidesktop_choice
+    read -r -p "Pick a number 1-7: " acpidesktop_choice
 }
 
 acpi_server() {
     echo "################################################################"
     echo "Now, we need to download ACPI"
-    echo "1. Haswell-E"
-    echo "2. Broadwell-E"
-    echo "3. Skylake-X/W and Cascade Lake-X/W"
+    echo "1. Haswell-E/Broadwell-E"
+    echo "2. Skylake-X/W and Cascade Lake-X/W"
     echo "################################################################"
     read -r -p "Pick a number 1-3: " acpiserver_choice
 }
@@ -1303,6 +1305,16 @@ acpi_func() {
     esac
 }
 acpi_func
+
+case $pc_choice in
+    1 )
+        case $acpidesktop_choice in
+            7 )
+                acpi_server
+            ;;
+        esac
+    ;;
+esac
 
 asusmb() {
     echo "################################################################"
@@ -1443,6 +1455,27 @@ case $pc_choice in
                 info "Dowloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
             ;;
+            7 )
+                case $acpiserver_choice in
+                    1 )
+                        info "Downloading SSDT-PLUG-DRTNIA..."
+                        curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                        info "Downloading SSDT-EC-USBX-DESKTOP..."
+                        curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                        info "Downloading SSDT-RTC0-RANGE-HEDT..."
+                        curl -Ls "$SSDT_RTC0_RANGE_HEDT" -o "$efi"/ACPI/SSDT-RTC0-RANGE-HEDT.aml
+                        info "Downloading SSDT-UNC..."
+                        curl -Ls "$SSDT_UNC" -o "$efi"/ACPI/SSDT-UNC.aml
+                    ;;
+                    2 )
+                        info "Downloading SSDT-PLUG-DRTNIA..."
+                        curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
+                        info "Downloading SSDT-EC-USBX-DESKTOP..."
+                        curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                        info "Downloading SSDT-RTC0-RANGE-HEDT..."
+                        curl -Ls "$SSDT_RTC0_RANGE_HEDT" -o "$efi"/ACPI/SSDT-RTC0-RANGE-HEDT.aml
+                esac
+            ;;
             * )
                 error "Invalid Choice"
                 acpi_desktop
@@ -1512,42 +1545,6 @@ case $pc_choice in
             * )
                 error "Invalid Choice"
                 acpi_laptop
-            ;;
-        esac
-    ;;
-    3 )
-        case $acpiserver_choice in
-            1 )
-                info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
-                info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                info "Downloading SSDT-RTC0-RANGE-HEDT..."
-                curl -Ls "$SSDT_RTC0_RANGE_HEDT" -o "$efi"/ACPI/SSDT-RTC0-RANGE-HEDT.aml
-                info "Downloading SSDT-UNC..."
-                curl -Ls "$SSDT_UNC" -o "$efi"/ACPI/SSDT-UNC.aml
-            ;;
-            2 )
-                info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
-                info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                info "Downloading SSDT-RTC0-RANGE-HEDT..."
-                curl -Ls "$SSDT_RTC0_RANGE_HEDT" -o "$efi"/ACPI/SSDT-RTC0-RANGE-HEDT.aml
-                info "Downloading SSDT-UNC..."
-                curl -Ls "$SSDT_UNC" -o "$efi"/ACPI/SSDT-UNC.aml
-            ;;
-            3 )
-                info "Downloading SSDT-PLUG-DRTNIA..."
-                curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
-                info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-                info "Downloading SSDT-RTC0-RANGE-HEDT..."
-                curl -Ls "$SSDT_RTC0_RANGE_HEDT" -o "$efi"/ACPI/SSDT-RTC0-RANGE-HEDT.aml
-            ;;
-            * )
-                error "Invalid Choice"
-                acpi_server
             ;;
         esac
     ;;
@@ -5325,12 +5322,15 @@ cpu_rev_server(){
 
 case $pc_choice in 
     1 )
-        cpu_rev_desktop
+        case $acpidesktop_choice in
+            7 )
+                cpu_rev_server
+            ;;
+            * )
+                cpu_rev_desktop
+        esac
     ;;
     2 )
         cpu_rev_laptop
-    ;;
-    3)
-        cpu_rev_server
     ;;
 esac                        
