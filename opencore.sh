@@ -463,14 +463,13 @@ extras() {
         if [[ $option =~ ^[1-5]$ ]]; then
             case $option in
                 1 )
-                    NAME="CpuTscSync" 
                     CPUTSCSYNC_RELEASE_NUMBER=$(curl -s "$CPUTSCSYNC_URL" | jq -r '.tag_name')
                     CPUTSCSYNC_RELEASE_URL=$(curl -s "$CPUTSCSYNC_URL" | jq -r '.assets[] | select(.name | match("CpuTscSync-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
                     if [ -z "$CPUTSCSYNC_RELEASE_URL" ]; then
                         error "CpuTscSync Release URL not found, is GitHub rate-limiting you?"
                         exit 1
                     fi
-                    info "Downloading $NAME $CPUTSCSYNC_RELEASE_NUMBER..."
+                    info "Downloading CpuTscSync $CPUTSCSYNC_RELEASE_NUMBER..."
                 ;;
                 2 )
                     REALTEKCARDREADER_RELEASE_NUMBER=$(curl -s "$REALTEKCARDREADER_URL" | jq -r '.tag_name')
@@ -493,11 +492,10 @@ extras() {
                     curl -Ls "$REALTEKCARDREADERFRIEND_RELEASE_URL" -o "$dir"/temp/RealtekCardReaderFriend.zip
                     unzip -q "$dir"/temp/RealtekCardReaderFriend.zip -d "$dir"/temp/RealtekCardReaderFriend
                     mv "$dir"/temp/RealtekCardReaderFriend/RealtekCardReaderFriend.kext "$efipath"/OC/Kexts/RealtekCardReaderFriend.kext
-                    git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
-                    python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
-
                 ;;
             esac
+            git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
+            python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
 
         else    
             error "Invalid option: $option"
