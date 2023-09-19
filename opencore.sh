@@ -31,6 +31,7 @@ REALTEKCARDREADERFRIEND_URL="https://api.github.com/repos/0xFireWolf/RealtekCard
 BRIGHTNESSKEYS_URL="https://api.github.com/repos/acidanthera/BrightnessKeys/releases/latest"
 ECENABLER_URL="https://api.github.com/repos/1Revenger1/ECEnabler/releases/latest"
 RADEONSENSOR_URL="https://api.github.com/repos/ChefKissInc/RadeonSensor/releases/latest"
+SMCAMDPROCESSOR_URL="https://api.github.com/repos/trulyspinach/SMCAMDProcessor/releases/latest"
 SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
 SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
 SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
@@ -748,6 +749,21 @@ pc() {
     esac
 }
 pc
+amddesktop() {
+    echo ""
+    echo "################################################################"
+    echo "Do you have an AMD CPU?"
+    echo "################################################################"
+    read -r -p "y/n: " amd_cpu
+    case $amd_cpu in
+        y|Y|Yes|YES|yes )
+            amd_cpu=True
+        ;;
+        n|N|No|NO|no )
+            amd_cpu=False
+        ;;
+    esac
+}
 vsmcplugins() {
     echo ""
     echo "################################################################"
@@ -756,8 +772,24 @@ vsmcplugins() {
     read -r -p "y/n: " vsmc_plugins
     case $vsmc_plugins in
     y|Y|Yes|YES|yes )
+        vsmcplugins=True
+        case $amd_cpu in
+            True )
+                SMCAMDPROCESSOR_RELEASE_URL=$(curl -s "$SMCAMDPROCESSOR_URL" | jq -r '.assets[] | select(.name | contains("SMCAMDProcessor.kext.zip") | .browser_download_url')
+                if [ -z "$SMCAMDPROCESSOR_RELEASE_URL" ]; then
+                    error "SMCAMDProcessor release URL not found, is GitHub rate-limiting you?"
+                    exit 1
+                fi
+                info "Downloading SMCAMDProcessor..."
+                curl -Ls "$SMCAMDPROCESSOR_RELEASE_URL" -o "$dir"/temp/SMCAMDProcessor.zip
+                unzip -q "$dir"/temp/SMCAMDProcessor.zip -d "$dir"/temp/SMCAMDProcessor
+                mv "$dir"/temp/SMCAMDProcessor/SMCAMDProcessor.kext "$efi"/Kexts/SMCAMDProcessor.kext
+            ;;  
+            False )
+                mv "$dir"/temp/VirtualSMC/Kexts/SMCProcessor.kext "$efi"/Kexts/SMCProcessor.kext
+            ;;
+        esac
         mv "$dir"/temp/VirtualSMC/Kexts/SMCSuperIO.kext "$efi"/Kexts/SMCSuperIO.kext
-        mv "$dir"/temp/VirtualSMC/Kexts/SMCProcessor.kext "$efi"/Kexts/SMCProcessor.kext
         case $pc_choice in
             1 )
                 echo "" > /dev/null
@@ -772,6 +804,7 @@ vsmcplugins() {
         esac
     ;;
     n|N|No|NO|no )
+        vsmcplugins=False
         echo "" > /dev/null
     ;;
     * )
@@ -819,15 +852,15 @@ atiradeonplugins() {
     esac
 }
 
-case $vsmc_plugins in
-    y|Y|YES|Yes|yes )
-        case $os_choice in
-            1|2|3|4 )
-                atiradeonplugins
-            ;;
-        esac
+case $vsmcplugins in
+    True )
+        atiradeonplugins
+    ;;
+    False )
+        echo "" > /dev/null
     ;;
 esac
+
 ethernet() {
     echo "################################################################"
     echo "Next, we're going to need to ask you about hardware."
@@ -1104,7 +1137,6 @@ nvme_choice() {
 }
 nvme_choice
 
-
 VOODOOPS2_RELEASE_URL=$(curl -s "$VOODOOPS2_URL" | jq -r '.assets[] | select(.name | match("VoodooPS2Controller-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
 
 laptop_input_screen() {
@@ -1218,6 +1250,7 @@ case $pc_choice in
         laptop_input_screen
     ;;
 esac
+
 brightnesskeys() {
     echo "################################################################"
     echo "Does this laptop have screen brightness keys?"
@@ -1258,6 +1291,7 @@ case $pc_choice in
         mv "$dir"/temp/ECEnabler/ECEnabler.kext "$efi"/Kexts/ECEnabler.kext
     ;;
 esac
+
 acpi_laptop() {
     echo "################################################################"
     echo "Now, we need to download ACPI"
@@ -1269,18 +1303,24 @@ acpi_laptop() {
     echo "################################################################"
     read -r -p "Pick a number, 1-5: " acpilaptop_choice
 }
-acpi_desktop() {
+intel_desktop_acpi() {
     echo "################################################################"
     echo "Now, we need to download ACPI"
     echo "1. Haswell and Broadwell"
     echo "2. Skylake & Kaby Lake"
     echo "3. Coffee Lake"
     echo "4. Comet Lake"
-    echo "5. Bulldozer(15h) and Jaguar(16h)"
-    echo "6. Ryzen and Threadripper(17h and 19h)"
-    echo "7. Other (Server systems, HEDT, etc)"
+    echo "5. Other (Server systems, HEDT, etc)"
     echo "################################################################"
-    read -r -p "Pick a number 1-7: " acpidesktop_choice
+    read -r -p "Pick a number 1-5: " acpidesktop_choice
+}
+amd_desktop_acpi() {
+    echo "################################################################"
+    echo "Now, we need to download ACPI"
+    echo "1. Bulldozer(15h) and Jaguar(16h)"
+    echo "2. Ryzen and Threadripper(17h and 19h)"
+    echo "################################################################"
+    read -r -p "Pick a number 1-2: " acpidesktop_choice
 }
 
 acpi_server() {
@@ -1291,29 +1331,6 @@ acpi_server() {
     echo "################################################################"
     read -r -p "Pick a number 1-3: " acpiserver_choice
 }
-
-acpi_func() {
-    case $pc_choice in 
-    1 )
-        acpi_desktop
-    ;;
-    2 )
-        acpi_laptop
-    ;;
-    esac
-}
-acpi_func
-
-case $pc_choice in
-    1 )
-        case $acpidesktop_choice in
-            7 )
-                acpi_server
-            ;;
-        esac
-    ;;
-esac
-
 asusmb() {
     echo "################################################################"
     echo "We'll need to ask you this question for gathering ACPI files."
@@ -1334,17 +1351,6 @@ asusmb() {
         ;;
     esac
 }
-
-case $pc_choice in
-    1 )
-       case $acpidesktop_choice in
-           4 )
-                asusmb
-            ;;
-        esac
-    ;;
-esac
-
 laptop9th_10thgen() {
     echo "################################################################"
     echo "We'll need to ask you this question for gathering ACPI files."
@@ -1367,16 +1373,6 @@ laptop9th_10thgen() {
         ;;
     esac
 }
-
-case $pc_choice in
-    2 )
-        case $acpilaptop_choice in
-            4 )
-                laptop9th_10thgen
-            ;;
-        esac
-esac
-
 am5mb() {
     echo "################################################################"
     echo "We'll need to ask you this question for gathering ACPI files."
@@ -1399,15 +1395,31 @@ am5mb() {
 }
 
 case $pc_choice in
-    3 )
-       case $acpidesktop_choice in
-           4 )
-                am5mb
+    1 )
+        case $acpidesktop_choice in
+            4 )
+                asusmb
             ;;
-            6 )
-                am5mb
+            5 )
+                acpi_server
             ;;
         esac
+        case $amd_cpu in
+            True )
+                amd_desktop_acpi
+            ;;
+            False )
+                intel_desktop_acpi
+            ;;
+        esac
+    ;;
+    2 )
+        case $acpilaptop_choice in
+            4 )
+                laptop9th_10thgen
+            ;;
+        esac
+        acpi_laptop
     ;;
 esac
 
@@ -1446,14 +1458,6 @@ case $pc_choice in
                 curl -Ls "$SSDT_AWAC" -o "$efi"/ACPI/SSDT-AWAC.aml
             ;;
             5 )
-                info "Downloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            ;;
-            6 )
-                info "Dowloading SSDT-EC-USBX-DESKTOP..."
-                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
-            ;;
-            7 )
                 case $acpiserver_choice in
                     1 )
                         info "Downloading SSDT-PLUG-DRTNIA..."
@@ -1543,6 +1547,21 @@ case $pc_choice in
             * )
                 error "Invalid Choice"
                 acpi_laptop
+            ;;
+        esac
+    ;;
+esac
+case $amd_cpu in
+    True )
+        case $acpidesktop_choice in
+            1 )
+                info "Downloading SSDT-EC-USBX-DESKTOP..."
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+            ;;
+            2 )
+                info "Downloading SSDT-EC-USBX-DESKTOP..."
+                curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
+                am5mb
             ;;
         esac
     ;;
@@ -2243,6 +2262,7 @@ amdkernelpatches() {
     add_plist Kernel.Patch.21.Skip int
     set_plist Kernel.Patch.21.Skip int 0
 }
+
 macserial() {
     case $os in
         Linux )
@@ -2262,6 +2282,7 @@ macserial() {
     set_plist PlatformInfo.Generic.MLB string "$MLB"
     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
 }
+
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -4797,6 +4818,7 @@ cometlake_desktop_config_setup(){
 }
 
 amd1516_desktop_config_setup(){
+    info "Configuring config.plist for AMD 15h/16h desktop..."
     set_plist Kernel.Emulate.DummyPowerManagement bool True
     amdkernelpatches
     set_plist Kernel.Quirks.PanicNoKextDump bool True
@@ -4908,6 +4930,7 @@ amd1516_desktop_config_setup(){
 }
 
 amd1719_desktop_config_setup(){
+    info "Configuring config.plist for AMD 17h/19h desktop..."
     trx40(){
         echo "################################################################"
         echo "Do you have a TRx40 system?"
@@ -5256,46 +5279,115 @@ cpu_rev_laptop() {
     esac
 }
 
-cpu_rev_desktop() {
+
+desktop_haswell_broadwell() {
     echo "################################################################"
     echo "Now, we need to ask you what generation your processor is."
     echo "1. Haswell"
     echo "2. Broadwell"
-    echo "3. Skylake"
-    echo "4. Kaby Lake"
-    echo "5. Coffee Lake"
-    echo "6. Comet Lake"
-    echo "7. Bulldozer(15h) and Jaguar (16h)"
-    echo "8. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
-    read -r -p "Pick a number 1-8: " desktop_cpu_gen_choice
-    case $desktop_cpu_gen_choice in
-        1|2 ) 
+    read -r -p "Pick a number 1-2: " haswell_broadwell_choice
+    case $haswell_broadwell_choice in
+        1 )
             haswell_broadwell_desktop_config_setup
         ;;
-        3 )
-            skylake_desktop_config_setup
+        2 )
+            haswell_broadwell_desktop_config_setup
         ;;
-        4 )
-            kabylake_desktop_config_setup
-        ;;
-        5 )
-            coffeelake_desktop_config_setup
-        ;;
-        6 )
-            cometlake_desktop_config_setup
-        ;;
-        7 ) 
-            amd1516_desktop_config_setup
-        ;;
-        8 ) 
-            amd1719_desktop_config_setup
-        ;;
-        * )
-            error "Invalid Choice"
-            cpu_rev_desktop
     esac
 }
+
+laptop_haswell_broadwell() {
+    echo "################################################################"
+    echo "Now, we need to ask you what generation your processor is."
+    echo "1. Haswell"
+    echo "2. Broadwell"
+    echo "################################################################"
+    read -r -p "Pick a number 1-2: " haswell_broadwell_choice
+    case $haswell_broadwell_choice in
+        1 )
+            haswell_laptop_config_setup
+        ;;
+        2 )
+            broadwell_laptop_config_setup
+        ;;
+    esac
+}
+
+desktop_skylake_kabylake() {
+    echo "################################################################"
+    echo "Now, we need to ask you what generation your processor is."
+    echo "1. Skylake"
+    echo "2. Kaby Lake"
+    echo "################################################################"
+    read -r -p "Pick a number 1-2: " skylake_kabylake_choice
+    case $skylake_kabylake_choice in
+        1 )
+            skylake_desktop_config_setup
+        ;;
+        2 )
+            kabylake_desktop_config_setup
+        ;;
+    esac
+}
+
+laptop_skylake_kabylake() {
+    echo "################################################################"
+    echo "Now, we need to ask you what generation your processor is."
+    echo "1. Skylake"
+    echo "2. Kaby Lake"
+    echo "################################################################"
+    read -r -p "Pick a number 1-2: " skylake_kabylake_choice
+    case $skylake_kabylake_choice in
+        1 )
+            skylake_laptop_config_setup
+        ;;
+        2 )
+            kabylake_laptop_config_setup
+        ;;
+    esac
+}
+
+# cpu_rev_desktop() {
+#     echo "################################################################"
+#     echo "Now, we need to ask you what generation your processor is."
+#     echo "1. Haswell"
+#     echo "2. Broadwell"
+#     echo "3. Skylake"
+#     echo "4. Kaby Lake"
+#     echo "5. Coffee Lake"
+#     echo "6. Comet Lake"
+#     echo "7. Bulldozer(15h) and Jaguar (16h)"
+#     echo "8. Ryzen and Threadripper(17h and 19h)"
+#     echo "################################################################"
+#     read -r -p "Pick a number 1-8: " desktop_cpu_gen_choice
+#     case $desktop_cpu_gen_choice in
+#         1|2 ) 
+#             haswell_broadwell_desktop_config_setup
+#         ;;
+#         3 )
+#             skylake_desktop_config_setup
+#         ;;
+#         4 )
+#             kabylake_desktop_config_setup
+#         ;;
+#         5 )
+#             coffeelake_desktop_config_setup
+#         ;;
+#         6 )
+#             cometlake_desktop_config_setup
+#         ;;
+#         7 ) 
+#             amd1516_desktop_config_setup
+#         ;;
+#         8 ) 
+#             amd1719_desktop_config_setup
+#         ;;
+#         * )
+#             error "Invalid Choice"
+#             cpu_rev_desktop
+#     esac
+# }
 
 cpu_rev_server(){
     echo "################################################################"
@@ -5321,11 +5413,27 @@ cpu_rev_server(){
 case $pc_choice in 
     1 )
         case $acpidesktop_choice in
+            1 )
+                desktop_haswell_broadwell
+            ;;
+            2 )
+                desktop_skylake_kabylake
+            ;;
+            3 )
+                coffeelake_desktop_config_setup
+            ;;
+            4 )
+                cometlake_desktop_config_setup
+            ;;
+            5 )
+                amd1516_desktop_config_setup
+            ;;
+            6 )
+                amd1719_desktop_config_setup
+            ;;
             7 )
                 cpu_rev_server
             ;;
-            * )
-                cpu_rev_desktop
         esac
     ;;
     2 )
