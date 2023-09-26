@@ -762,8 +762,22 @@ amddesktop() {
         n|N|No|NO|no )
             amd_cpu=False
         ;;
+        * )
+            error "Invalid Choice"
+            amddesktop
+        ;;
     esac
 }
+
+case $pc_choice in
+    1 )
+        amddesktop
+    ;;
+    2 )
+        echo "" > /dev/null
+    ;;
+esac
+
 vsmcplugins() {
     echo ""
     echo "################################################################"
@@ -775,7 +789,7 @@ vsmcplugins() {
         vsmcplugins=True
         case $amd_cpu in
             True )
-                SMCAMDPROCESSOR_RELEASE_URL=$(curl -s "$SMCAMDPROCESSOR_URL" | jq -r '.assets[] | select(.name | contains("SMCAMDProcessor.kext.zip") | .browser_download_url')
+                SMCAMDPROCESSOR_RELEASE_URL=$(curl -s "$SMCAMDPROCESSOR_URL" | jq -r '.assets[] | select(.name | contains("SMCAMDProcessor") and contains(".kext.zip")) | .browser_download_url')
                 if [ -z "$SMCAMDPROCESSOR_RELEASE_URL" ]; then
                     error "SMCAMDProcessor release URL not found, is GitHub rate-limiting you?"
                     exit 1
@@ -1312,7 +1326,7 @@ intel_desktop_acpi() {
     echo "4. Comet Lake"
     echo "5. Other (Server systems, HEDT, etc)"
     echo "################################################################"
-    read -r -p "Pick a number 1-5: " acpidesktop_choice
+    read -r -p "Pick a number 1-5: " intel_acpidesktop_choice
 }
 amd_desktop_acpi() {
     echo "################################################################"
@@ -1320,7 +1334,7 @@ amd_desktop_acpi() {
     echo "1. Bulldozer(15h) and Jaguar(16h)"
     echo "2. Ryzen and Threadripper(17h and 19h)"
     echo "################################################################"
-    read -r -p "Pick a number 1-2: " acpidesktop_choice
+    read -r -p "Pick a number 1-2: " amd_acpidesktop_choice
 }
 
 acpi_server() {
@@ -1329,7 +1343,7 @@ acpi_server() {
     echo "1. Haswell-E/Broadwell-E"
     echo "2. Skylake-X/W and Cascade Lake-X/W"
     echo "################################################################"
-    read -r -p "Pick a number 1-3: " acpiserver_choice
+    read -r -p "Pick a number 1-2: " acpiserver_choice
 }
 asusmb() {
     echo "################################################################"
@@ -1393,17 +1407,16 @@ am5mb() {
         ;;
     esac
 }
-
+case $intel_acpidesktop_choice in
+     4 )
+        asusmb
+    ;;
+    5 )
+        acpi_server
+    ;;
+esac
 case $pc_choice in
     1 )
-        case $acpidesktop_choice in
-            4 )
-                asusmb
-            ;;
-            5 )
-                acpi_server
-            ;;
-        esac
         case $amd_cpu in
             True )
                 amd_desktop_acpi
@@ -1414,19 +1427,20 @@ case $pc_choice in
         esac
     ;;
     2 )
+        acpi_laptop
         case $acpilaptop_choice in
             4 )
                 laptop9th_10thgen
             ;;
         esac
-        acpi_laptop
+        
     ;;
 esac
 
 
 case $pc_choice in 
     1 )
-        case $acpidesktop_choice in
+        case $intel_acpidesktop_choice in
             1 )
                 info "Downloading SSDT-PLUG-DRTNIA..."
                 curl -Ls "$SSDT_PLUG_DRTNIA" -o "$efi"/ACPI/SSDT-PLUG-DRTNIA.aml
@@ -1480,7 +1494,7 @@ case $pc_choice in
             ;;
             * )
                 error "Invalid Choice"
-                acpi_desktop
+                acpi_server
             ;;
         esac
     ;;
@@ -1553,7 +1567,7 @@ case $pc_choice in
 esac
 case $amd_cpu in
     True )
-        case $acpidesktop_choice in
+        case $amd_acpidesktop_choice in
             1 )
                 info "Downloading SSDT-EC-USBX-DESKTOP..."
                 curl -Ls "$SSDT_EC_USBX_DESKTOP" -o "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
@@ -2264,6 +2278,7 @@ amdkernelpatches() {
 }
 
 macserial() {
+    info "Generating SMBIOS..."
     case $os in
         Linux )
             chmod +x "$dir"/Utilities/macserial/macserial.linux
@@ -2412,7 +2427,6 @@ ice_lake_laptop_config_setup() {
         echo "2. MacBookPro16,2 - CPU: Quad Core 28W GPU: G4/G7 Display Size:13inch "
         echo "################################################################"
         read -r -p "Pick a number 1-2: " smbios_choice
-        info "Generating SMBIOS..."
         case $smbios_choice in
             1 )
                 smbiosname="MacBookAir9,1"
@@ -4823,7 +4837,7 @@ amd1516_desktop_config_setup(){
     amdkernelpatches
     set_plist Kernel.Quirks.PanicNoKextDump bool True
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+    set_plist Kernel.Quirks.ProvideCurrentCpuInfo bool True
     case $os_choice in
         4|5 ) 
             set_plist Kernel.Quirks.XhciPortLimit bool False
@@ -4878,54 +4892,45 @@ amd1516_desktop_config_setup(){
         esac
     }
     platforminfo
-    case $os in
-        Linux )
-             chmod +x "$dir"/Utilities/macserial/macserial.linux
-             smbiosoutput=$("$dir"/Utilities/macserial/macserial.linux --num 1 --model "$smbiosname")
-         ;;
-         Darwin )
-             chmod +x "$dir"/Utilities/macserial/macserial
-             smbiosoutput=$("$dir"/Utilities/macserial/macserial --num 1 --model "$smbiosname")
-         ;;
-     esac
-     SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
-     MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
-     UUID=$(uuidgen)
-     set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
-     set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
-     set_plist PlatformInfo.Generic.MLB string "$MLB"
-     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
-     case $os_choice in
-         4 )
-             set_plist UEFI.APFS.MinVersion int 1412101001000000
-             set_plist UEFI.APFS.MinDate int 20200306
-         ;;
-         5 )
-             set_plist UEFI.APFS.MinVersion int 945275007000000
-             set_plist UEFI.APFS.MinDate int 20190820
-         ;;
-     esac
-     hpdesktop(){
-         echo "################################################################"
-         echo "Do you have a HP System?"
-         echo "################################################################"
-         read -r -p "y/n: " hpdesktop_choice
-         case $hpdesktop_choice in
-             Y|y|YES|Yes|yes )
-                 set_plist UEFI.Quirks.UnblockFsConnect bool True
-             ;;
-             n|N|NO|No|no )
-                echo "" > /dev/null
-             ;;
-             * )
-                 error "Invalid Choice"
-                hpdesktop
-             esac
-     }
-     hpdesktop
-     info "Done!"
-     info "Your EFI is located at $dir/EFI"
-     warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
+    macserial
+    SN=$(echo "$smbiosoutput" | awk -F '|' '{print $1}' | tr -d '[:space:]')
+    MLB=$(echo "$smbiosoutput" | awk -F '|' '{print $2}' | tr -d '[:space:]')
+    UUID=$(uuidgen)
+    set_plist PlatformInfo.Generic.SystemProductName string "$smbiosname"
+    set_plist PlatformInfo.Generic.SystemSerialNumber string "$SN"
+    set_plist PlatformInfo.Generic.MLB string "$MLB"
+    set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
+    case $os_choice in
+        4 )
+            set_plist UEFI.APFS.MinVersion int 1412101001000000
+            set_plist UEFI.APFS.MinDate int 20200306
+        ;;
+        5 )
+            set_plist UEFI.APFS.MinVersion int 945275007000000
+            set_plist UEFI.APFS.MinDate int 20190820
+        ;;
+    esac
+    hpdesktop(){
+        echo "################################################################"
+        echo "Do you have a HP System?"
+        echo "################################################################"
+        read -r -p "y/n: " hpdesktop_choice
+        case $hpdesktop_choice in
+            Y|y|YES|Yes|yes )
+                set_plist UEFI.Quirks.UnblockFsConnect bool True
+            ;;
+            n|N|NO|No|no )
+               echo "" > /dev/null
+            ;;
+            * )
+                error "Invalid Choice"
+               hpdesktop
+            esac
+    }
+    hpdesktop
+    info "Done!"
+    info "Your EFI is located at $dir/EFI"
+    warning "Please disable the following options in the BIOS.\nFast Boot\nSecure Boot\nSerial/COM Port\nParallel Port\nVT-d\nCompatibility Support Module (CSM)\nIOMMU"
     warning "Please enable the following options in the BIOS.\nAbove 4G Decoding\nEHCI/XHCI Hand-off\nOS type: Windows 8.1/10 UEFI Mode (might be Other OS)\nSATA Mode: AHCI"
 }
 
@@ -4971,10 +4976,10 @@ amd1719_desktop_config_setup(){
     set_plist Booter.Quirks.SetupVirtualMap bool True
     set_plist Booter.Quirks.SyncRuntimePermissions bool True
     set_plist Kernel.Emulate.DummyPowerManagement bool True
-    # kernel patch start
+    amdkernelpatches
     set_plist Kernel.Quirks.PanicNoKextDump bool True
     set_plist Kernel.Quirks.PowerTimeoutKernelPanic bool True
-    set_plist Kernel.Quirks.ProvideCpuCurrentInfo bool True
+    set_plist Kernel.Quirks.ProvideCurrentCpuInfo bool True
     case $os_choice in
         4|5 ) 
             set_plist Kernel.Quirks.XhciPortLimit bool False
@@ -5410,9 +5415,22 @@ cpu_rev_server(){
     esac
 }
 
+case $amd_cpu in
+    True )
+        case $amd_acpidesktop_choice in
+            1 )
+                amd1516_desktop_config_setup
+            ;;
+            2 )
+                amd1719_desktop_config_setup
+            ;;
+        esac
+    ;;
+esac
+
 case $pc_choice in 
     1 )
-        case $acpidesktop_choice in
+        case $intel_acpidesktop_choice in
             1 )
                 desktop_haswell_broadwell
             ;;
@@ -5424,12 +5442,6 @@ case $pc_choice in
             ;;
             4 )
                 cometlake_desktop_config_setup
-            ;;
-            5 )
-                amd1516_desktop_config_setup
-            ;;
-            6 )
-                amd1719_desktop_config_setup
             ;;
             7 )
                 cpu_rev_server
