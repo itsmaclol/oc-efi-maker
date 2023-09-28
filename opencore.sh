@@ -64,19 +64,31 @@ internet_check() {
 
 curl -Ls "$PLISTEDITOR_URL" -o "$dir"/temp/plisteditor.py
 add_plist() {
-    python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py -s add "$1" --type "$2" --path "$efi"/config.plist
 }
 
 set_plist() {
-    python3 "$dir"/temp/plisteditor.py set "$1" --type "$2" --value "$3" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py -s set "$1" --type "$2" --value "$3" --path "$efi"/config.plist
 }
 
 delete_plist() {
-    python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py -s delete "$1" --path "$efi"/config.plist
 }
 
 change_plist() {
-    python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efi"/config.plist
+    python3 "$dir"/temp/plisteditor.py -s change "$1" --new_type "$2" --path "$efi"/config.plist
+}
+
+append_plist() {
+    python3 "$dir"/temp/plisteditor.py -s append "$1" --type "$2" --value="$3" --path "$efi"/config.plist
+}
+
+remvalue_plist() {
+    python3 "$dir"/temp/plisteditor.py remvalue "$1" --type "$2" --value="$3" --path "$efi"/config.plist
+}
+
+print_plist() {
+     python3 "$dir"/temp/plisteditor.py print "$1" --path "$efi"/config.plist
 }
 
 error() {
@@ -335,19 +347,19 @@ extras() {
         fi
     }
     addplist() {
-        python3 "$dir"/temp/plisteditor.py add "$1" --type "$2" --path "$efipath"OC//config.plist
+        python3 "$dir"/temp/plisteditor.py -s add "$1" --type "$2" --path "$efipath"OC//config.plist
     }
 
     setplist() {
-        python3 "$dir"/temp/plisteditor.py set "$1" --type "$2" --value "$3" --path "$efipath"/OC/config.plist
+        python3 "$dir"/temp/plisteditor.py -s set "$1" --type "$2" --value "$3" --path "$efipath"/OC/config.plist
     }
 
     deleteplist() {
-        python3 "$dir"/temp/plisteditor.py delete "$1" --path "$efipath"/OC/config.plist
+        python3 "$dir"/temp/plisteditor.py -s delete "$1" --path "$efipath"/OC/config.plist
     }
 
     changeplist() {
-        python3 "$dir"/temp/plisteditor.py change "$1" --new_type "$2" --path "$efipath"/OC/config.plist
+        python3 "$dir"/temp/plisteditor.py -s change "$1" --new_type "$2" --path "$efipath"/OC/config.plist
     }
 
     opencanopy() {
@@ -622,7 +634,6 @@ macos_choice(){
     echo "5: macOS 10.14 Mojave"
     echo "Info: For any macOS lower than this, you will need to follow the guide yourself."
     echo "################################################################"
-    echo ""
     read -r -p "Pick a number 1-5: " os_choice
     mkdir "$dir"/com.apple.recovery.boot
     case $os_choice in
@@ -634,22 +645,22 @@ macos_choice(){
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
+            python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         3 )
             os_name="BigSur"
             info "Downloading macOS Big Sur, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
+            python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-42FD25EABCABB274 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         4 )
             os_name="Catalina"
             info "Downloading macOS Catalina, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
+            python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-00BE6ED71E35EB86 -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         5 )
             os_name="Mojave"
             info "Downloading macOS Mojave, please wait..."
-            #python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download -o "$dir"/com.apple.recovery.boot
+            python3 "$dir"/Utilities/macrecovery/macrecovery.py -b Mac-7BA5B2DFE22DDD8C -m 00000000000KXPG00 download -o "$dir"/com.apple.recovery.boot
         ;;
         * )
             error "Invalid Choice"
@@ -662,7 +673,7 @@ info "Setting up EFI Folder Structure..."
 sleep 3
 efi="$dir"/EFI/EFI/OC
 mkdir -p "$efi"
-#cp -r "$dir"/com.apple.recovery.boot "$dir"/EFI/com.apple.recovery.boot
+cp -r "$dir"/com.apple.recovery.boot "$dir"/EFI/com.apple.recovery.boot
 cp -r "$dir"/X64/EFI/BOOT "$dir"/EFI/EFI/BOOT
 cp -r "$dir"/X64/EFI/OC/ACPI "$efi"/ACPI
 cp -r "$dir"/X64/EFI/OC/Kexts "$efi"/Kexts
@@ -1653,7 +1664,6 @@ amdkernelpatches() {
             corecountpatch="BA$core_count 0000 00"
         ;;
     esac
-    echo "$corecountpatch"
     info "Adding AMD Kernel patches to config.plist, this may take a while, please wait..."
     delete_plist Kernel.Patch
     add_plist Kernel.Patch array
@@ -2298,6 +2308,40 @@ macserial() {
     set_plist PlatformInfo.Generic.SystemUUID string "$UUID"
 }
 
+misc_nvram() {
+    set_plist Misc.Debug.AppleDebug bool True
+    set_plist Misc.Debug.ApplePanic bool True
+    set_plist Misc.Debug.DisableWatchDog bool True
+    set_plist Misc.Debug.Target int 67
+    set_plist Misc.Security.AllowSetDefault bool True
+    set_plist Misc.Security.BlacklistAppleUpdate bool True
+    set_plist Misc.Security.ScanPolicy int 0
+    set_plist Misc.Security.SecureBootModel string Default
+    set_plist Misc.Security.Vault string Optional
+    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+}
+misc_nvram
+
+amdgpu() {
+    echo "################################################################"
+    echo "Do you have an AMD Navi 10/14/21/23 series GPU?"
+    echo "Info: This action will add agdpmod=pikera to boot args"
+    echo "################################################################"
+    read -r -p "y/n: " navigpu_choice
+    case $navigpu_choice in
+        y|Y|YES|Yes|yes )
+            append_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string " agdpmod=pikera"
+        ;;
+        n|N|NO|No|no )
+            echo "" > /dev/null
+        ;;
+    esac   
+}
+case $ati_radeon_plugins in
+    y|Y|YES|Yes|yes )
+        amdgpu
+    ;;
+esac
 ice_lake_laptop_config_setup() {
     info "Configuring config.plist for Ice Lake Laptop..."
     chromebook() {
@@ -2410,16 +2454,7 @@ ice_lake_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1 -igfxcdc -igfxdvmt -igfxdbeo"
+    append_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string " -igfxcdc -igfxdvmt -igfxdbeo"
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -2624,16 +2659,7 @@ coffelakeplus_cometlake_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo() {
         echo "################################################################"
         echo "Now, for an SMBIOS, pick the one closest to your hardware."
@@ -2840,16 +2866,7 @@ coffee_whiskeylake_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo() {
         echo "################################################################"
         echo "Now, for an SMBIOS, pick the one closest to your hardware."
@@ -3046,16 +3063,7 @@ kabylake_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS, choose the one closest to your hardware."
@@ -3333,16 +3341,7 @@ skylake_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo_setup() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -3546,16 +3545,7 @@ broadwell_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit bool True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -3737,16 +3727,7 @@ haswell_laptop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit True
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -3976,16 +3957,7 @@ haswell_broadwell_desktop_config_setup() {
              set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     #gumi note: add gpu-specific boot args later
     platforminfo(){
         echo "################################################################"
@@ -4219,16 +4191,7 @@ skylake_desktop_config_setup() {
             set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     ventura_platforminfo() {
         echo "################################################################"
         echo "Now, we need to pick an SMBIOS."
@@ -4391,16 +4354,7 @@ kabylake_desktop_config_setup(){
              set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     # gpu args go here
     platforminfo(){
         echo "################################################################"
@@ -4600,16 +4554,7 @@ coffeelake_desktop_config_setup() {
              set_plist Kernel.Quirks.XhciPortLimit False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     # gpu args go here
     smbiosname=iMac19,1
     macserial
@@ -4773,16 +4718,7 @@ cometlake_desktop_config_setup(){
              set_plist Kernel.Quirks.XhciPortLimit bool False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     #mac note: idk why this shit isnt working ffs
     #set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.LegacySchema.WriteFlash bool True
     # gpu and network args go here
@@ -4843,16 +4779,7 @@ amd1516_desktop_config_setup(){
             set_plist Kernel.Quirks.XhciPortLimit bool False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     #gpu args and what not go here
     platforminfo(){
         echo "################################################################"
@@ -4985,16 +4912,7 @@ amd1719_desktop_config_setup(){
             set_plist Kernel.Quirks.XhciPortLimit bool False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     # gpu args go here
     platforminfo(){
         echo "################################################################"
@@ -5130,16 +5048,7 @@ haswell_broadwell_e_server_config_setup(){
             set_plist Kernel.Quirks.XhciPortLimit bool False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     # gpu args go here
     set_plist NVRAM.Delete.LegacyOverwrite bool True
     smbiosname=iMacPro1,1
@@ -5213,16 +5122,7 @@ skylake_cascade_server_config_setup(){
             set_plist Kernel.Quirks.XhciPortLimit bool False
         ;;
     esac
-    set_plist Misc.Debug.AppleDebug bool True
-    set_plist Misc.Debug.ApplePanic bool True
-    set_plist Misc.Debug.DisableWatchDog bool True
-    set_plist Misc.Debug.Target int 67
-    set_plist Misc.Security.AllowSetDefault bool True
-    set_plist Misc.Security.BlacklistAppleUpdate bool True
-    set_plist Misc.Security.ScanPolicy int 0
-    set_plist Misc.Security.SecureBootModel string Default
-    set_plist Misc.Security.Vault string Optional
-    set_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.boot-args string "-v debug=0x100 alcid=1 keepsyms=1"
+    
     # gpu args go here
     smbiosname=iMacPro1,1
     macserial
