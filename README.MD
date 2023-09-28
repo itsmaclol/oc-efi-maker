@@ -1,5 +1,5 @@
 # oc-efi-maker
-oc-efi-maker is a script to generate an OpenCore EFI files, to Install MacOS your computer.
+oc-efi-maker is a script to generate OpenCore EFI files, to Install MacOS your computer.
 ## Installaton
 Running the script locally:
 ```
