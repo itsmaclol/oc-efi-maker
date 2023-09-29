@@ -17,7 +17,9 @@ chmod +x ./opencore.sh
 `--ignore-deps-internet-check` - Ignores both the internet and dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed and have internet.
 
 # Please Read!
-This project was made for fun, and the EFI's that this script generates are only for testing purposes, if you want an actual stable hackintosh, please follow [the dortania guide](https://dortania.github.io/OpenCore-Install-Guide)
+This project was made for fun, and the EFI's that this script generates are only for testing purposes, if you want an actual stable hackintosh, please follow [the dortania guide](https://dortania.github.io/OpenCore-Install-Guide).
+
+And neither me/the people in credits are responsible for any damage you may cause to your device.
 
 ## Discord
 If you encounter any problem using the script, Use [this](https://discord.gg/DKcuujJ6nt) invite link - This is our main Support server, And thank you for taking the time to use the script...
