@@ -35,6 +35,7 @@ SMCAMDPROCESSOR_URL="https://api.github.com/repos/trulyspinach/SMCAMDProcessor/r
 RESTRICTEVENTS_URL="https://api.github.com/repos/acidanthera/RestrictEvents/releases/latest"
 CTLNAAHCIPORT_URL="https://github.com/dortania/OpenCore-Install-Guide/raw/master/extra-files/CtlnaAHCIPort.kext.zip"
 SATA_UNSUPPORTED_URL="https://github.com/khronokernel/Legacy-Kexts/raw/master/Injectors/Zip/SATA-unsupported.kext.zip"
+HORNDIS_URL="https://github.com/midi1996/JBOG/blob/master/Extra/HoRNDIS.kext.zip?raw=true"
 SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
 SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
 SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
@@ -477,10 +478,11 @@ extras() {
         echo "3. RestrictEvents"
         echo "4. CtlnaAHCIPort"
         echo "5. SATA-Unsupported"
+        echo "6. HoRNDIS"
         echo "################################################################"
         read -r -p "Pick your kexts (ex 1 2): " kexts_choice
         for option in $kexts_choice ; do
-        if [[ $option =~ ^[1-5]$ ]]; then
+        if [[ $option =~ ^[1-6]$ ]]; then
             case $option in
                 1 )
                     CPUTSCSYNC_RELEASE_NUMBER=$(curl -s "$CPUTSCSYNC_URL" | jq -r '.tag_name')
@@ -539,6 +541,12 @@ extras() {
                     curl -Ls "$SATA_UNSUPPORTED_URL" -o "$dir"/temp/SATA-Unsupported.kext.zip
                     unzip -q "$dir"/temp/SATA-Unsupported.kext.zip -d "$dir"/temp/SATA-Unsupported
                     mv "$dir"/temp/SATA-Unsupported/SATA-Unsupported.kext "$efipath"/OC/Kexts/SATA-Unsupported.kext                
+                ;;
+                6 )
+                    info "Downloading HoRNDIS..."
+                    curl -Ls "$HORNDIS_URL" -o "$dir"/temp/HoRNDIS.kext.zip
+                    unzip -q "$dir"/temp/HoRNDIS.kext.zip -d "$dir"/temp/HoRNDIS
+                    mv "$dir"/temp/HoRNDIS/HoRNDIS.kext "$efipath"/OC/Kexts/HoRNDIS.kext
                 ;;
             esac
         else    
