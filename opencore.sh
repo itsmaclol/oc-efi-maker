@@ -32,6 +32,9 @@ BRIGHTNESSKEYS_URL="https://api.github.com/repos/acidanthera/BrightnessKeys/rele
 ECENABLER_URL="https://api.github.com/repos/1Revenger1/ECEnabler/releases/latest"
 RADEONSENSOR_URL="https://api.github.com/repos/ChefKissInc/RadeonSensor/releases/latest"
 SMCAMDPROCESSOR_URL="https://api.github.com/repos/trulyspinach/SMCAMDProcessor/releases/latest"
+RESTRICTEVENTS_URL="https://api.github.com/repos/acidanthera/RestrictEvents/releases/latest"
+CTLNAAHCIPORT_URL="https://github.com/dortania/OpenCore-Install-Guide/raw/master/extra-files/CtlnaAHCIPort.kext.zip"
+SATA_UNSUPPORTED_URL="https://github.com/khronokernel/Legacy-Kexts/raw/master/Injectors/Zip/SATA-unsupported.kext.zip"
 SSDT_PLUG_DRTNIA="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-PLUG-DRTNIA.aml"
 SSDT_EC_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-DESKTOP.aml"
 SSDT_EC_USBX_DESKTOP="https://github.com/dortania/Getting-Started-With-ACPI/raw/master/extra-files/compiled/SSDT-EC-USBX-DESKTOP.aml"
@@ -244,6 +247,7 @@ Options:
     --ignore-internet-check      Ignores the internet check at the beginning of the script. Use this if you are 100% sure that you have internet.
     --ignore-dependencies        Ignores the dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed.
     --ignore-deps-internet-check Ignores both the internet and dependency check at the beginning of the script. Use this if you are 100% sure that you have the dependencies installed and have internet.
+    --extras                     Prints out the extras menu
 
 Warning: This script is made for an elementary opencore EFI, if you want a stable hackintosh please follow the guide over at https://dortania.github.io/OpenCore-Install-Guide/
 EOF
@@ -275,14 +279,14 @@ extras() {
         if [ -d "$kexts_dir" ] && [ "$(find "$kexts_dir" -name '*.kext' -print -quit)" ]; then
             echo "" > /dev/null
         else
-            echo "No .kext files found in '$kexts_dir'."
+            echo "No Kexts found in '$kexts_dir'."
             exit 1
         fi
 
         if [ -d "$drivers_dir" ] && [ "$(find "$drivers_dir" -name '*.efi' -print -quit)" ]; then
             echo "" > /dev/null
         else
-            echo "No .efi files found in '$drivers_dir'."
+            echo "No Drivers found in '$drivers_dir'."
             exit 1
         fi
         check_file() {
@@ -470,6 +474,9 @@ extras() {
         echo "What kexts would you like to install?"
         echo "1. CpuTscSync"
         echo "2. RealtekCardReader"
+        echo "3. RestrictEvents"
+        echo "4. CtlnaAHCIPort"
+        echo "5. SATA-Unsupported"
         echo "################################################################"
         read -r -p "Pick your kexts (ex 1 2): " kexts_choice
         for option in $kexts_choice ; do
@@ -483,6 +490,9 @@ extras() {
                         exit 1
                     fi
                     info "Downloading CpuTscSync $CPUTSCSYNC_RELEASE_NUMBER..."
+                    curl -Ls "$CPUTSCSYNC_RELEASE_URL" -o "$dir"/temp/CpuTscSync.zip
+                    unzip -q "$dir"/temp/CpuTscSync.zip -d "$dir"/temp/CpuTscSync
+                    mv "$dir"/temp/CpuTscSync/CpuTscSync.kext "$efipath"/OC/Kexts/CpuTscSync.kext
                 ;;
                 2 )
                     REALTEKCARDREADER_RELEASE_NUMBER=$(curl -s "$REALTEKCARDREADER_URL" | jq -r '.tag_name')
@@ -506,15 +516,39 @@ extras() {
                     unzip -q "$dir"/temp/RealtekCardReaderFriend.zip -d "$dir"/temp/RealtekCardReaderFriend
                     mv "$dir"/temp/RealtekCardReaderFriend/RealtekCardReaderFriend.kext "$efipath"/OC/Kexts/RealtekCardReaderFriend.kext
                 ;;
+                3 )
+                    RESTRICTEVENTS_RELEASE_NUMBER=$(curl -s "$RESTRICTEVENTS_URL" | jq -r '.tag_name')
+                    RESTRICTEVENTS_RELEASE_URL=$(curl -s "$RESTRICTEVENTS_URL" | jq -r '.assets[] | select(.name | match("RestrictEvents-[0-9]\\.[0-9]\\.[0-9]-RELEASE")) | .browser_download_url')
+                    if [ -z "$RESTRICTEVENTS_RELEASE_URL" ]; then
+                        error "RestrictEvents Release URL not found, is GitHub rate-limiting you?"
+                        exit 1
+                    fi
+                    info "Downloading RestrictEvents $RESTRICTEVENTS_RELEASE_NUMBER..."
+                    curl -Ls "$RESTRICTEVENTS_RELEASE_URL" -o "$dir"/temp/RestrictEvents.zip
+                    unzip -q "$dir"/temp/RestrictEvents.zip -d "$dir"/temp/RestrictEvents
+                    mv "$dir"/temp/RestrictEvents/RestrictEvents.kext "$efipath"/OC/Kexts/RestrictEvents.kext
+                ;;
+                4 )
+                    info "Downloading CtlnaAHCIPort..."
+                    curl -Ls "$CTLNAAHCIPORT_URL" -o "$dir"/temp/CtlnaAHCIPort.kext.zip
+                    unzip -q "$dir"/temp/CtlnaAHCIPort.kext.zip -d "$dir"/temp/CtlnaAHCIPort
+                    mv "$dir"/temp/CtlnaAHCIPort/CtlnaAHCIPort.kext "$efipath"/OC/Kexts/CtlnaAHCIPort.kext
+                ;;
+                5 )
+                    info "Downloading SATA-Unsupported..."
+                    curl -Ls "$SATA_UNSUPPORTED_URL" -o "$dir"/temp/SATA-Unsupported.kext.zip
+                    unzip -q "$dir"/temp/SATA-Unsupported.kext.zip -d "$dir"/temp/SATA-Unsupported
+                    mv "$dir"/temp/SATA-Unsupported/SATA-Unsupported.kext "$efipath"/OC/Kexts/SATA-Unsupported.kext                
+                ;;
             esac
-            git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
-            python3 "$dir"temp/OCSnapshot/OCSnapshot.py -i "$efipath"/config.plist -s "$efipath"EFI/OC &> /dev/null
-
         else    
             error "Invalid option: $option"
             kexts
         fi
         done
+        git clone -q https://github.com/corpnewt/OCSnapshot "$dir"/temp/OCSnapshot
+        python3 "$dir"/temp/OCSnapshot/OCSnapshot.py -i "$efipath"/OC/config.plist -s "$efipath"/OC &> /dev/null
+        info "Done!"
         exit 1
     }
     menu() {
@@ -1592,12 +1626,12 @@ case $amd_cpu in
     ;;
 esac
 
-git clone -q https://github.com/corpnewt/OCSnapshot.git "$dir"/OCSnapshot
+git clone -q https://github.com/corpnewt/OCSnapshot.git "$dir"/temp/OCSnapshot
 info "Adding Driver entries into config.plist..."
 info "Adding ACPI entries into config.plist..."
 info "Adding Tool entries into config.plist..."
 info "Adding Kext entries into config.plist..."
-python3 "$dir"/OCSnapshot/OCSnapshot.py -i "$efi"/config.plist -s "$dir"/EFI/EFI/OC -c &> /dev/null
+python3 "$dir"/temp/OCSnapshot/OCSnapshot.py -i "$efi"/config.plist -s "$dir"/EFI/EFI/OC -c &> /dev/null
 
 
 change_plist NVRAM.Add.7C436110-AB2A-4BBB-A880-FE41995C9F82.prev-lang:kbd string
