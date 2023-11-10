@@ -138,6 +138,10 @@ case $1 in
         download_file "$PLISTEDITOR_URL" "$dir"/temp/plisteditor.py
         extras
     ;;
+    "--ignore-recovery-download" )
+        internet_check
+        dependencies
+    ;;
     "" )
         internet_check
         dependencies
@@ -213,7 +217,7 @@ macos_choice(){
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            python3 "$dir"/temp/OpenCore/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
+            #python3 "$dir"/temp/OpenCore/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         3 )
             os_name="BigSur"
@@ -235,8 +239,14 @@ macos_choice(){
             macos_choice
     esac
 }
-macos_choice
-
+case $1 in
+    "--ignore-recovery-download" )
+        echo "" > /dev/null
+    ;;
+    * )
+        macos_choice
+    ;;
+esac
 info "Setting up EFI Folder Structure..."
 mkdir -p "$dir"/EFI/EFI
 mv "$dir"/temp/OpenCore/X64/EFI "$dir"/EFI
@@ -1150,6 +1160,10 @@ case $amd_cpu in
                 am5mb
                 cp "$src"/acpi/SSDT-EC-USBX-DESKTOP.aml "$efi"/ACPI/SSDT-EC-USBX-DESKTOP.aml
                 info "Copied SSDT-EC-USBX-DESKTOP to ACPI folder"
+            ;;
+            * )
+                error "Invalid Choice."
+                amd_desktop_acpi
             ;;
         esac
     ;;
