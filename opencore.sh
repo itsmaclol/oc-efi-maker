@@ -217,7 +217,7 @@ macos_choice(){
         2 )
             os_name="Monterey"
             info "Downloading macOS Monterey, please wait..."
-            #python3 "$dir"/temp/OpenCore/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
+            python3 "$dir"/temp/OpenCore/Utilities/macrecovery/macrecovery.py -b Mac-FFE5EF870D7BA81A -m 00000000000000000 download -o "$dir"/com.apple.recovery.boot
         ;;
         3 )
             os_name="BigSur"
