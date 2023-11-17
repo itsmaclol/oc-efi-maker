@@ -33,3 +33,5 @@ CTLNAAHCIPORT_URL="https://github.com/dortania/OpenCore-Install-Guide/raw/master
 SATA_UNSUPPORTED_URL="https://github.com/khronokernel/Legacy-Kexts/raw/master/Injectors/Zip/SATA-unsupported.kext.zip"
 HORNDIS_URL="https://github.com/midi1996/JBOG/blob/master/Extra/HoRNDIS.kext.zip?raw=true"
 PLISTEDITOR_URL="https://raw.githubusercontent.com/itsmaclol/plisteditor/main/plisteditor.py"
+github_version_url="https://raw.githubusercontent.com/itsmaclol/oc-efi-maker/main/src/version.txt"
+local_version_file="$src/version.txt"

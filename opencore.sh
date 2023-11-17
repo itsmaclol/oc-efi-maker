@@ -151,6 +151,38 @@ case $1 in
         exit 1
     ;;  
 esac
+# Get local version and version from github and cross-check
+local_version=$(cat $local_version_file)
+github_version=$(curl -s $github_version_url)
+
+if [[ $github_version > $local_version ]]; then
+    version() {
+        echo "Local version: $local_version"
+        echo "GitHub version: $github_version"
+        read -r -p "A new version is available. Do you want to update? (y/n): " version_choice
+    }
+    version
+
+    case $version_choice in
+        y|Y|YES|Yes|yes )
+            info "Updating..."
+            git pull
+        ;;
+        n|N|NO|No|no )
+            error "You need to update for the program to work properly."
+            exit 1
+        ;;
+        * )
+            error "Invalid Choice."
+            clear
+            version
+        ;;
+    esac
+          
+else
+    echo "" > /dev/null
+fi
+
 download_file "$PLISTEDITOR_URL" "$dir"/temp/plisteditor.py
 echo "################################################################"
 echo "Welcome to OC-EFI-Maker."
